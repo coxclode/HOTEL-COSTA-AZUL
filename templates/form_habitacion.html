@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ titulo }} - Hotel Costa Azul</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #f3f6fb;
+            color: #1f2937;
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #0b2f4f, #0f4c81);
+            color: white;
+            padding: 30px 24px;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 40px;
+        }
+
+        .brand-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.18);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+        }
+
+        .brand h2 {
+            margin: 0;
+            font-size: 20px;
+            line-height: 1.2;
+        }
+
+        .brand p {
+            margin: 4px 0 0;
+            font-size: 13px;
+            color: #dbeafe;
+        }
+
+        .menu a {
+            display: block;
+            text-decoration: none;
+            color: #e5efff;
+            padding: 13px 15px;
+            border-radius: 14px;
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+
+        .menu a:hover,
+        .menu a.active {
+            background: rgba(255, 255, 255, 0.18);
+            color: white;
+        }
+
+        .content {
+            margin-left: 260px;
+            padding: 36px 44px;
+            width: calc(100% - 260px);
+        }
+
+        .topbar {
+            background: white;
+            border-radius: 24px;
+            padding: 28px 32px;
+            box-shadow: 0 12px 30px rgba(15, 76, 129, 0.08);
+            margin-bottom: 28px;
+        }
+
+        .topbar h1 {
+            margin: 0;
+            font-size: 34px;
+            color: #0b2f4f;
+        }
+
+        .topbar p {
+            margin: 8px 0 0;
+            color: #64748b;
+        }
+
+        .form-wrapper {
+            max-width: 980px;
+        }
+
+        .form-card {
+            background: white;
+            border-radius: 26px;
+            padding: 34px;
+            box-shadow: 0 12px 30px rgba(15, 76, 129, 0.08);
+        }
+
+        .form-section-title {
+            margin-bottom: 24px;
+        }
+
+        .form-section-title h3 {
+            margin: 0;
+            color: #0b2f4f;
+            font-size: 22px;
+        }
+
+        .form-section-title p {
+            margin: 6px 0 0;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 22px;
+        }
+
+        .form-grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 22px;
+            margin-top: 22px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full {
+            grid-column: 1 / -1;
+            margin-top: 22px;
+        }
+
+        label {
+            font-weight: 700;
+            color: #0b2f4f;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            border: 1px solid #d8e2ef;
+            border-radius: 14px;
+            padding: 13px 14px;
+            font-size: 15px;
+            outline: none;
+            background: #fbfdff;
+            transition: 0.2s;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #0f4c81;
+            box-shadow: 0 0 0 4px rgba(15, 76, 129, 0.12);
+            background: white;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 130px;
+        }
+
+        .help-text {
+            margin-top: 6px;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 30px;
+            padding-top: 24px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .btn-cancel {
+            text-decoration: none;
+            background: white;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+            padding: 13px 20px;
+            border-radius: 14px;
+            font-weight: 700;
+        }
+
+        .btn-save {
+            background: #0f4c81;
+            color: white;
+            border: none;
+            padding: 13px 22px;
+            border-radius: 14px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn-save:hover {
+            background: #0b2f4f;
+        }
+
+        .btn-cancel:hover {
+            background: #f8fafc;
+        }
+
+        .alert {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 15px 18px;
+            border-radius: 14px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .mini-summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .summary-card {
+            background: #eef6ff;
+            border-radius: 18px;
+            padding: 18px;
+            border: 1px solid #dbeafe;
+        }
+
+        .summary-card span {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .summary-card strong {
+            display: block;
+            margin-top: 6px;
+            font-size: 17px;
+            color: #0b2f4f;
+        }
+
+        @media (max-width: 900px) {
+            .layout {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                position: relative;
+                width: 100%;
+            }
+
+            .content {
+                margin-left: 0;
+                width: 100%;
+                padding: 24px;
+            }
+
+            .form-grid,
+            .form-grid-3,
+            .mini-summary {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="layout">
+
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">🌊</div>
+            <div>
+                <h2>Hotel Costa Azul</h2>
+                <p>Panel administrador</p>
+            </div>
+        </div>
+
+        <nav class="menu">
+            <a href="/">🏠 Inicio</a>
+            <a href="{{ url_for('admin_habitaciones') }}" class="active">🛏️ Habitaciones</a>
+            <a href="#">📅 Disponibilidad</a>
+            <a href="#">📋 Reservas</a>
+            <a href="#">📊 Reportes</a>
+        </nav>
+    </aside>
+
+    <main class="content">
+
+        <section class="topbar">
+            <h1>{{ titulo }}</h1>
+            <p>Completa la información de la habitación para mantener actualizado el sistema.</p>
+        </section>
+
+        <div class="form-wrapper">
+
+            {% with mensajes = get_flashed_messages() %}
+                {% if mensajes %}
+                    {% for mensaje in mensajes %}
+                        <div class="alert">{{ mensaje }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <section class="mini-summary">
+                <div class="summary-card">
+                    <span>Módulo</span>
+                    <strong>Habitaciones</strong>
+                </div>
+
+                <div class="summary-card">
+                    <span>Historia</span>
+                    <strong>HU15 / HU18</strong>
+                </div>
+
+                <div class="summary-card">
+                    <span>Estado del registro</span>
+                    <strong>{{ "Edición" if habitacion else "Nuevo" }}</strong>
+                </div>
+            </section>
+
+            <section class="form-card">
+
+                <div class="form-section-title">
+                    <h3>Datos de la habitación</h3>
+                    <p>Los campos registrados se guardarán en MySQL y se reflejarán en el panel administrador.</p>
+                </div>
+
+                <form method="POST" action="{{ accion }}">
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Número de habitación</label>
+                            <input
+                                type="text"
+                                name="numero"
+                                placeholder="Ejemplo: 101"
+                                value="{{ habitacion.numero if habitacion else '' }}"
+                                required
+                            >
+                            <span class="help-text">Debe ser único. Ejemplo: 101, 102, 201.</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Tipo de habitación</label>
+                            <select name="tipo" required>
+                                <option value="">Seleccione...</option>
+                                <option value="Simple" {% if habitacion and habitacion.tipo == 'Simple' %}selected{% endif %}>Simple</option>
+                                <option value="Doble" {% if habitacion and habitacion.tipo == 'Doble' %}selected{% endif %}>Doble</option>
+                                <option value="Suite" {% if habitacion and habitacion.tipo == 'Suite' %}selected{% endif %}>Suite</option>
+                            </select>
+                            <span class="help-text">Tipos permitidos según el alcance del proyecto.</span>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-3">
+                        <div class="form-group">
+                            <label>Precio base</label>
+                            <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                name="precio_base"
+                                placeholder="Ejemplo: 120.00"
+                                value="{{ habitacion.precio_base if habitacion else '' }}"
+                                required
+                            >
+                            <span class="help-text">No se permiten precios negativos.</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Capacidad</label>
+                            <input
+                                type="number"
+                                min="1"
+                                name="capacidad"
+                                placeholder="Ejemplo: 2"
+                                value="{{ habitacion.capacidad if habitacion else '1' }}"
+                                required
+                            >
+                            <span class="help-text">Cantidad máxima de personas.</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Estado</label>
+                            <select name="estado" required>
+                                <option value="Disponible" {% if habitacion and habitacion.estado == 'Disponible' %}selected{% endif %}>Disponible</option>
+                                <option value="Bloqueada" {% if habitacion and habitacion.estado == 'Bloqueada' %}selected{% endif %}>Bloqueada</option>
+                                <option value="Mantenimiento" {% if habitacion and habitacion.estado == 'Mantenimiento' %}selected{% endif %}>Mantenimiento</option>
+                            </select>
+                            <span class="help-text">Controla si se mostrará al cliente.</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group full">
+                        <label>Descripción</label>
+                        <textarea
+                            name="descripcion"
+                            placeholder="Ejemplo: Habitación doble con baño privado, TV, WiFi y vista exterior."
+                            required>{{ habitacion.descripcion if habitacion else '' }}</textarea>
+                        <span class="help-text">Esta descripción será visible para el administrador y luego para el cliente.</span>
+                    </div>
+
+                    <div class="actions">
+                        <a href="{{ url_for('admin_habitaciones') }}" class="btn-cancel">
+                            Cancelar
+                        </a>
+
+                        <button type="submit" class="btn-save">
+                            Guardar cambios
+                        </button>
+                    </div>
+
+                </form>
+
+            </section>
+
+        </div>
+
+    </main>
+
+</div>
+
+</body>
+</html>
