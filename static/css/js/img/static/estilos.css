@@ -263,6 +263,38 @@ body {
     font-weight: 600;
 }
 
+
+/* =========================================================
+   TOGGLE / SWITCH DISPONIBILIDAD HABITACIÓN
+========================================================= */
+
+.switch-btn {
+    border: none;
+    padding: 8px 18px;
+    border-radius: 20px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+/* Estado disponible */
+.switch-btn.activo {
+    background-color: #28a745;
+}
+
+/* Estado bloqueada */
+.switch-btn.bloqueado {
+    background-color: #dc3545;
+}
+
+/* Hover */
+.switch-btn:hover {
+    opacity: 0.8;
+    transform: scale(1.05);
+}
+
+
 /* Formularios */
 .form-card {
     background: white;

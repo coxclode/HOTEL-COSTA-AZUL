@@ -315,9 +315,9 @@ def actualizar_habitacion(id_habitacion):
 
 
 # =========================================================
-# HU18 - CAMBIAR DISPONIBILIDAD DE HABITACIÓN
+# HU18 - TOGGLE / SWITCH PARA CAMBIAR DISPONIBILIDAD
 # Disponible -> Bloqueada
-# Bloqueada o Mantenimiento -> Disponible
+# Bloqueada -> Disponible
 # =========================================================
 @app.route("/admin/habitaciones/cambiar-estado/<int:id_habitacion>", methods=["POST"])
 def cambiar_estado_habitacion(id_habitacion):
@@ -357,7 +357,7 @@ def cambiar_estado_habitacion(id_habitacion):
 
         conexion.commit()
 
-        flash("Estado de habitación actualizado correctamente.")
+        flash(f"Habitación cambiada a estado: {nuevo_estado}")
         return redirect(url_for("admin_habitaciones"))
 
     except Exception as error:
@@ -376,8 +376,6 @@ def cambiar_estado_habitacion(id_habitacion):
 
 # =========================================================
 # VISTA CLIENTE - SOLO HABITACIONES DISPONIBLES
-# Esto ayuda a cumplir HU18:
-# las habitaciones bloqueadas no deben mostrarse al cliente.
 # =========================================================
 @app.route("/habitaciones")
 def habitaciones_cliente():
