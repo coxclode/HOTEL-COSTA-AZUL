@@ -1,5 +1,9 @@
 from flask import Flask, render_template, request, redirect, flash, url_for
 from db import get_connection
+from habitaciones_service import (
+    ESTADO_HABITACION_BLOQUEADA,
+    filtrar_habitaciones_para_reserva,
+)
 
 app = Flask(__name__)
 app.secret_key = "hotel_costa_azul_dev"
@@ -375,18 +379,11 @@ def cambiar_estado_habitacion(id_habitacion):
 
 
 # =========================================================
-# VISTA CLIENTE - SOLO HABITACIONES DISPONIBLES
+# HU18 - CONSULTAR HABITACIONES PARA RESERVA
+# Descarta automaticamente habitaciones en estado Bloqueada.
 # =========================================================
-@app.route("/habitaciones")
-def habitaciones_cliente():
-    conexion = None
-    cursor = None
-
-    try:
-        conexion = get_connection()
-        cursor = conexion.cursor(dictionary=True)
-
-        cursor.execute("""
+def consultar_habitaciones_para_reserva(cursor):
+    cursor.execute("""
             SELECT
                 id_habitacion,
                 numero,
@@ -397,11 +394,27 @@ def habitaciones_cliente():
                 capacidad,
                 imagen
             FROM habitaciones
-            WHERE estado = 'Disponible'
+            WHERE estado <> %s
             ORDER BY id_habitacion ASC
-        """)
+        """, (ESTADO_HABITACION_BLOQUEADA,))
 
-        habitaciones = cursor.fetchall()
+    habitaciones = cursor.fetchall()
+    return filtrar_habitaciones_para_reserva(habitaciones)
+
+
+# =========================================================
+# VISTA CLIENTE - HABITACIONES APTAS PARA RESERVA
+# =========================================================
+@app.route("/habitaciones")
+def habitaciones_cliente():
+    conexion = None
+    cursor = None
+
+    try:
+        conexion = get_connection()
+        cursor = conexion.cursor(dictionary=True)
+
+        habitaciones = consultar_habitaciones_para_reserva(cursor)
 
         return render_template(
             "habitaciones_cliente.html",
