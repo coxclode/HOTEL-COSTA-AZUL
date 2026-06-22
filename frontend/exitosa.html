@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reserva confirmada - Hotel Costa Azul</title>
+    <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+
+<nav class="navbar">
+    <a class="brand" href="index.html">🌊 Hotel Costa Azul</a>
+</nav>
+
+<div style="max-width:600px;margin:60px auto;padding:0 24px;text-align:center;">
+
+    <div style="font-size:72px;margin-bottom:16px;">✅</div>
+    <h1 style="font-size:28px;margin-bottom:10px;">¡Reserva generada!</h1>
+    <p style="color:#64748b;font-size:15px;margin-bottom:32px;">
+        Tu reserva está en estado <strong>pendiente</strong>. El equipo del hotel la confirmará en breve.
+    </p>
+
+    <div class="card" style="margin-bottom:24px;text-align:left;">
+        <div style="text-align:center;margin-bottom:20px;">
+            <span style="font-size:13px;color:#64748b;">Código de reserva</span>
+            <p id="codigo-reserva"
+               style="font-size:32px;font-weight:800;color:#0f4c81;letter-spacing:3px;margin-top:6px;">
+            </p>
+        </div>
+        <div class="resumen-grid" style="text-align:left;">
+            <div class="resumen-item">
+                <span>Check-in</span><strong id="ex-checkin"></strong>
+            </div>
+            <div class="resumen-item">
+                <span>Check-out</span><strong id="ex-checkout"></strong>
+            </div>
+            <div class="resumen-item">
+                <span>Total pagado</span><strong id="ex-total"></strong>
+            </div>
+        </div>
+    </div>
+
+    <p style="font-size:13px;color:#64748b;margin-bottom:24px;">
+        Guarda tu código de reserva. Lo necesitarás para el check-in.
+    </p>
+
+    <a href="index.html" class="btn btn-primary">Volver al inicio</a>
+
+</div>
+
+<script>
+    const resultado = JSON.parse(localStorage.getItem("reserva_resultado") || "null");
+    const hab       = JSON.parse(localStorage.getItem("reserva_hab")       || "null");
+
+    if (!resultado) {
+        window.location.href = "index.html";
+    } else {
+        document.getElementById("codigo-reserva").textContent = resultado.codigo_reserva;
+        document.getElementById("ex-checkin").textContent     = hab ? hab.checkin  : "—";
+        document.getElementById("ex-checkout").textContent    = hab ? hab.checkout : "—";
+        document.getElementById("ex-total").textContent       = `S/ ${parseFloat(resultado.precio_total).toFixed(2)}`;
+
+        // Limpiar localStorage del flujo
+        localStorage.removeItem("reserva_hab");
+        localStorage.removeItem("reserva_cliente");
+        localStorage.removeItem("reserva_resultado");
+    }
+</script>
+
+</body>
+</html>

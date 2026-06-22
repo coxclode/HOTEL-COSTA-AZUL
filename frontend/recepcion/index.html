@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Recepción - Hotel Costa Azul</title>
+    <link rel="stylesheet" href="../css/estilos.css">
+</head>
+<body>
+
+<div class="layout">
+
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">🌊</div>
+            <div>
+                <h2>Hotel Costa Azul</h2>
+                <p>Recepcionista</p>
+            </div>
+        </div>
+        <nav>
+            <a href="../index.html">🏠 Inicio</a>
+            <a href="index.html" class="active">
+                🔔 Notificaciones
+                <span id="badge-contador" class="notif-badge" style="display:none;">0</span>
+            </a>
+            <a href="../admin/index.html">🛏️ Habitaciones</a>
+        </nav>
+    </aside>
+
+    <div class="main-content">
+
+        <div class="topbar">
+            <div>
+                <h1>Panel de recepción</h1>
+                <p>HU17 — Notificaciones de reservas web en tiempo real.</p>
+            </div>
+            <div style="font-size:13px;color:#64748b;">
+                Actualización automática cada 15 segundos
+                <span id="ultimo-poll" style="margin-left:8px;"></span>
+            </div>
+        </div>
+
+        <div id="alerta" class="alert" style="display:none;"></div>
+
+        <!-- Panel de notificaciones -->
+        <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                <h2 style="font-size:18px;">
+                    Nuevas reservas
+                    <span id="titulo-contador" style="font-size:14px;color:#64748b;font-weight:400;margin-left:8px;"></span>
+                </h2>
+                <button class="btn btn-secondary btn-sm" onclick="pollAhora()">Actualizar ahora</button>
+            </div>
+
+            <div id="lista-notificaciones">
+                <p style="color:#64748b;text-align:center;padding:32px;">Verificando notificaciones…</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="../js/config.js"></script>
+<script src="../js/recepcion.js"></script>
+<script>
+    // Primera carga y luego polling cada 15 segundos
+    pollAhora();
+    setInterval(pollAhora, 15000);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Datos del cliente - Hotel Costa Azul</title>
+    <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+
+<nav class="navbar">
+    <a class="brand" href="index.html">🌊 Hotel Costa Azul</a>
+</nav>
+
+<div style="max-width:700px;margin:0 auto;padding:36px 24px;">
+
+    <!-- Stepper (HU5 activo) -->
+    <div class="stepper">
+        <div class="step">
+            <div class="step-num">1</div>
+            <span>Buscar</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+            <div class="step-num">2</div>
+            <span>Seleccionar</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step active">
+            <div class="step-num">3</div>
+            <span>Tus datos</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+            <div class="step-num">4</div>
+            <span>Confirmar</span>
+        </div>
+    </div>
+
+    <!-- Resumen de la habitación seleccionada -->
+    <div class="resumen-card" id="resumen-hab" style="margin-bottom:24px;"></div>
+
+    <!-- Formulario de datos del cliente (HU5) -->
+    <div class="card">
+        <h2 style="font-size:20px;margin-bottom:20px;">Datos del cliente</h2>
+
+        <form id="form-datos">
+            <div class="form-grid" style="gap:18px;">
+                <div class="form-group">
+                    <label>Nombres *</label>
+                    <input type="text" id="nombre" placeholder="Ej: Luis" required>
+                </div>
+                <div class="form-group">
+                    <label>Apellidos *</label>
+                    <input type="text" id="apellido" placeholder="Ej: Mendoza Avila" required>
+                </div>
+                <div class="form-group">
+                    <label>DNI *</label>
+                    <input type="text" id="dni" placeholder="Ej: 45678901"
+                           maxlength="8" pattern="\d{8}" required>
+                </div>
+                <div class="form-group">
+                    <label>Teléfono *</label>
+                    <input type="tel" id="telefono" placeholder="Ej: 987654321" required>
+                </div>
+                <div class="form-group col-span-2">
+                    <label>Correo electrónico *</label>
+                    <input type="email" id="correo" placeholder="Ej: luis@correo.com" required>
+                </div>
+            </div>
+
+            <div id="error-datos" class="alert alert-error" style="display:none;margin-top:16px;"></div>
+
+            <div style="display:flex;justify-content:space-between;margin-top:24px;padding-top:20px;border-top:1px solid #e2e8f0;">
+                <button type="button" class="btn btn-secondary" onclick="history.back()">← Volver</button>
+                <button type="submit" class="btn btn-primary">Continuar → Confirmar</button>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+<script src="js/config.js"></script>
+<script>
+    // Recuperar selección de habitación desde localStorage (HU4)
+    const reservaHab = JSON.parse(localStorage.getItem("reserva_hab") || "null");
+
+    if (!reservaHab) {
+        document.querySelector(".card").innerHTML =
+            `<div class="alert alert-error">
+                No hay habitación seleccionada.
+                <a href="index.html" style="color:#991b1b;font-weight:700;">Volver al inicio</a>
+             </div>`;
+    } else {
+        document.getElementById("resumen-hab").innerHTML = `
+            <h3 style="font-size:15px;margin-bottom:14px;">Habitación seleccionada</h3>
+            <div class="resumen-grid">
+                <div class="resumen-item">
+                    <span>Habitación</span>
+                    <strong>${reservaHab.tipo} · Nro. ${reservaHab.numero}</strong>
+                </div>
+                <div class="resumen-item">
+                    <span>Fechas</span>
+                    <strong>${reservaHab.checkin} → ${reservaHab.checkout}</strong>
+                </div>
+                <div class="resumen-item">
+                    <span>Total (${reservaHab.noches} noche/s)</span>
+                    <strong>S/ ${reservaHab.precio_total.toFixed(2)}</strong>
+                </div>
+            </div>`;
+    }
+
+    document.getElementById("form-datos").addEventListener("submit", function (e) {
+        e.preventDefault();
+        const errEl = document.getElementById("error-datos");
+
+        const nombre   = document.getElementById("nombre").value.trim();
+        const apellido = document.getElementById("apellido").value.trim();
+        const dni      = document.getElementById("dni").value.trim();
+        const correo   = document.getElementById("correo").value.trim();
+        const telefono = document.getElementById("telefono").value.trim();
+
+        if (!nombre || !apellido || !dni || !correo || !telefono) {
+            errEl.textContent = "Todos los campos son obligatorios.";
+            errEl.style.display = "block";
+            return;
+        }
+        if (!/^\d{8}$/.test(dni)) {
+            errEl.textContent = "El DNI debe tener exactamente 8 dígitos.";
+            errEl.style.display = "block";
+            return;
+        }
+
+        errEl.style.display = "none";
+
+        // Guardar datos del cliente en localStorage
+        const datosCliente = { nombre, apellido, dni, correo, telefono };
+        localStorage.setItem("reserva_cliente", JSON.stringify(datosCliente));
+
+        window.location.href = "confirmar.html";
+    });
+</script>
+
+</body>
+</html>

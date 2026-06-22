@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habitaciones disponibles - Hotel Costa Azul</title>
+    <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+
+<nav class="navbar">
+    <a class="brand" href="index.html">🌊 Hotel Costa Azul</a>
+    <nav>
+        <a href="index.html">Inicio</a>
+        <a href="admin/index.html">Administrador</a>
+    </nav>
+</nav>
+
+<div style="max-width:1100px;margin:0 auto;padding:36px 24px;">
+
+    <!-- Filtros activos y modificar búsqueda -->
+    <div class="card" style="margin-bottom:24px;">
+        <form id="form-refinar">
+            <div class="buscador-grid">
+                <div class="form-group">
+                    <label>Check-in</label>
+                    <input type="date" id="checkin" required>
+                </div>
+                <div class="form-group">
+                    <label>Check-out</label>
+                    <input type="date" id="checkout" required>
+                </div>
+                <div class="form-group">
+                    <label>Tipo</label>
+                    <select id="tipo">
+                        <option value="">Todos</option>
+                        <option value="Simple">Simple</option>
+                        <option value="Doble">Doble</option>
+                        <option value="Suite">Suite</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Precio máx. (S/)</label>
+                    <input type="number" id="precio_max" placeholder="Sin límite" min="0">
+                </div>
+                <div>
+                    <button type="submit" class="btn btn-primary" style="width:100%">Actualizar</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div id="info-busqueda" style="margin-bottom:16px;color:#64748b;font-size:14px;"></div>
+
+    <div id="contenedor-resultado"></div>
+
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/habitaciones.js"></script>
+<script>
+    // Pre-cargar parámetros de URL en los inputs
+    const params  = new URLSearchParams(window.location.search);
+    const checkin  = params.get("checkin")   || "";
+    const checkout = params.get("checkout")  || "";
+    const tipo     = params.get("tipo")      || "";
+    const precioMax = params.get("precio_max") || "";
+
+    document.getElementById("checkin").value    = checkin;
+    document.getElementById("checkout").value   = checkout;
+    document.getElementById("tipo").value       = tipo;
+    document.getElementById("precio_max").value = precioMax;
+
+    // Refinar búsqueda
+    document.getElementById("form-refinar").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const nuevosParams = new URLSearchParams({
+            checkin:  document.getElementById("checkin").value,
+            checkout: document.getElementById("checkout").value,
+        });
+        const t = document.getElementById("tipo").value;
+        const p = document.getElementById("precio_max").value;
+        if (t) nuevosParams.append("tipo", t);
+        if (p) nuevosParams.append("precio_max", p);
+        window.location.href = `habitaciones.html?${nuevosParams.toString()}`;
+    });
+
+    // Cargar habitaciones disponibles
+    buscarHabitaciones(checkin, checkout, tipo, precioMax);
+</script>
+
+</body>
+</html>

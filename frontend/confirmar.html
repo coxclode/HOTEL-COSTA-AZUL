@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmar reserva - Hotel Costa Azul</title>
+    <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+
+<nav class="navbar">
+    <a class="brand" href="index.html">🌊 Hotel Costa Azul</a>
+</nav>
+
+<div style="max-width:700px;margin:0 auto;padding:36px 24px;">
+
+    <!-- Stepper (HU6 activo) -->
+    <div class="stepper">
+        <div class="step">
+            <div class="step-num">1</div><span>Buscar</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+            <div class="step-num">2</div><span>Seleccionar</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+            <div class="step-num">3</div><span>Tus datos</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step active">
+            <div class="step-num">4</div><span>Confirmar</span>
+        </div>
+    </div>
+
+    <!-- Resumen completo (HU6) -->
+    <div class="card" style="margin-bottom:20px;">
+        <h2 style="font-size:20px;margin-bottom:18px;">Resumen de tu reserva</h2>
+
+        <div style="background:#f8fbff;border-radius:14px;padding:18px;margin-bottom:18px;">
+            <h3 style="font-size:15px;color:#64748b;margin-bottom:14px;">HABITACIÓN</h3>
+            <div class="resumen-grid">
+                <div class="resumen-item">
+                    <span>Tipo</span><strong id="conf-tipo"></strong>
+                </div>
+                <div class="resumen-item">
+                    <span>Número</span><strong id="conf-numero"></strong>
+                </div>
+                <div class="resumen-item">
+                    <span>Precio por noche</span><strong id="conf-precio-noche"></strong>
+                </div>
+            </div>
+        </div>
+
+        <div style="background:#f8fbff;border-radius:14px;padding:18px;margin-bottom:18px;">
+            <h3 style="font-size:15px;color:#64748b;margin-bottom:14px;">FECHAS</h3>
+            <div class="resumen-grid">
+                <div class="resumen-item">
+                    <span>Check-in</span><strong id="conf-checkin"></strong>
+                </div>
+                <div class="resumen-item">
+                    <span>Check-out</span><strong id="conf-checkout"></strong>
+                </div>
+                <div class="resumen-item">
+                    <span>Noches</span><strong id="conf-noches"></strong>
+                </div>
+            </div>
+        </div>
+
+        <div style="background:#f8fbff;border-radius:14px;padding:18px;margin-bottom:18px;">
+            <h3 style="font-size:15px;color:#64748b;margin-bottom:14px;">DATOS DEL CLIENTE</h3>
+            <div class="resumen-grid">
+                <div class="resumen-item">
+                    <span>Nombre completo</span><strong id="conf-nombre"></strong>
+                </div>
+                <div class="resumen-item">
+                    <span>DNI</span><strong id="conf-dni"></strong>
+                </div>
+                <div class="resumen-item">
+                    <span>Teléfono</span><strong id="conf-telefono"></strong>
+                </div>
+                <div class="resumen-item col-span-2" style="grid-column:1/-1;">
+                    <span>Correo</span><strong id="conf-correo"></strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total -->
+        <div style="background:linear-gradient(135deg,#0f4c81,#0b2f4f);border-radius:14px;
+                    padding:18px 22px;display:flex;justify-content:space-between;align-items:center;">
+            <span style="color:#bfdbfe;font-size:14px;font-weight:700;">TOTAL A PAGAR</span>
+            <span id="conf-total" style="color:#fff;font-size:28px;font-weight:800;"></span>
+        </div>
+    </div>
+
+    <div id="error-confirmar" class="alert alert-error" style="display:none;"></div>
+
+    <div style="display:flex;justify-content:space-between;gap:12px;">
+        <button class="btn btn-secondary" onclick="history.back()">← Editar datos</button>
+        <button id="btn-confirmar" class="btn btn-primary">Generar reserva</button>
+    </div>
+
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/reservas.js"></script>
+<script>
+    const hab     = JSON.parse(localStorage.getItem("reserva_hab")     || "null");
+    const cliente = JSON.parse(localStorage.getItem("reserva_cliente") || "null");
+
+    if (!hab || !cliente) {
+        window.location.href = "index.html";
+    } else {
+        document.getElementById("conf-tipo").textContent        = hab.tipo;
+        document.getElementById("conf-numero").textContent      = `Nro. ${hab.numero}`;
+        document.getElementById("conf-precio-noche").textContent = `S/ ${parseFloat(hab.precio_base).toFixed(2)}`;
+        document.getElementById("conf-checkin").textContent     = hab.checkin;
+        document.getElementById("conf-checkout").textContent    = hab.checkout;
+        document.getElementById("conf-noches").textContent      = `${hab.noches} noche(s)`;
+        document.getElementById("conf-nombre").textContent      = `${cliente.nombre} ${cliente.apellido}`;
+        document.getElementById("conf-dni").textContent         = cliente.dni;
+        document.getElementById("conf-telefono").textContent    = cliente.telefono;
+        document.getElementById("conf-correo").textContent      = cliente.correo;
+        document.getElementById("conf-total").textContent       = `S/ ${hab.precio_total.toFixed(2)}`;
+
+        document.getElementById("btn-confirmar").addEventListener("click", generarReserva);
+    }
+</script>
+
+</body>
+</html>

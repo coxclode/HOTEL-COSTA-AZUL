@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habitación - Hotel Costa Azul</title>
+    <link rel="stylesheet" href="../css/estilos.css">
+</head>
+<body>
+
+<div class="layout">
+
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">🌊</div>
+            <div>
+                <h2>Hotel Costa Azul</h2>
+                <p>Administrador</p>
+            </div>
+        </div>
+        <nav>
+            <a href="../index.html">🏠 Inicio</a>
+            <a href="index.html" class="active">🛏️ Habitaciones</a>
+            <a href="../recepcion/index.html">🔔 Recepción</a>
+        </nav>
+    </aside>
+
+    <div class="main-content">
+
+        <div class="topbar">
+            <div>
+                <h1 id="titulo-form">Registrar habitación</h1>
+                <p>Completa los campos y guarda los cambios.</p>
+            </div>
+        </div>
+
+        <div id="alerta" class="alert" style="display:none;"></div>
+
+        <div class="card" style="max-width:760px;">
+            <form id="form-habitacion">
+                <input type="hidden" id="id-habitacion">
+
+                <div class="form-grid" style="gap:18px;margin-bottom:18px;">
+                    <div class="form-group">
+                        <label>Número *</label>
+                        <input type="text" id="numero" placeholder="Ej: 101" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo *</label>
+                        <select id="tipo" required>
+                            <option value="">Seleccione…</option>
+                            <option value="Simple">Simple</option>
+                            <option value="Doble">Doble</option>
+                            <option value="Suite">Suite</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Precio base (S/) *</label>
+                        <input type="number" id="precio_base" step="0.01" min="0"
+                               placeholder="Ej: 120.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Capacidad *</label>
+                        <input type="number" id="capacidad" min="1"
+                               placeholder="Ej: 2" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Estado</label>
+                        <select id="estado">
+                            <option value="Disponible">Disponible</option>
+                            <option value="Bloqueada">Bloqueada</option>
+                            <option value="Mantenimiento">Mantenimiento</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom:24px;">
+                    <label>Descripción *</label>
+                    <textarea id="descripcion"
+                        placeholder="Ej: Habitación doble con baño privado, TV y WiFi."
+                        required></textarea>
+                </div>
+
+                <div style="display:flex;justify-content:flex-end;gap:12px;padding-top:16px;border-top:1px solid #e2e8f0;">
+                    <a href="index.html" class="btn btn-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-primary" id="btn-guardar">Guardar</button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<script src="../js/config.js"></script>
+<script src="../js/admin.js"></script>
+<script>
+    // Si viene ?id=X, cargar datos para editar
+    const idHab = new URLSearchParams(window.location.search).get("id");
+    if (idHab) {
+        document.getElementById("titulo-form").textContent = "Editar habitación";
+        document.getElementById("id-habitacion").value = idHab;
+        cargarHabitacionParaEditar(idHab);
+    }
+
+    document.getElementById("form-habitacion").addEventListener("submit", guardarHabitacion);
+</script>
+
+</body>
+</html>

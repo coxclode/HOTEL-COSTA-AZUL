@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle de habitación - Hotel Costa Azul</title>
+    <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+
+<nav class="navbar">
+    <a class="brand" href="index.html">🌊 Hotel Costa Azul</a>
+    <nav>
+        <a href="index.html">Inicio</a>
+        <a id="link-volver" href="habitaciones.html">Volver</a>
+    </nav>
+</nav>
+
+<div style="max-width:860px;margin:0 auto;padding:36px 24px;">
+
+    <div id="loading" style="text-align:center;padding:48px;color:#64748b;">
+        Cargando información de la habitación…
+    </div>
+
+    <div id="contenido" style="display:none;">
+
+        <!-- Imagen / icono -->
+        <div style="height:220px;background:linear-gradient(135deg,#0f4c81,#0b2f4f);
+                    border-radius:20px;display:flex;align-items:center;
+                    justify-content:center;font-size:80px;color:rgba(255,255,255,.6);
+                    margin-bottom:24px;">
+            🛏️
+        </div>
+
+        <!-- Encabezado -->
+        <div class="card" style="margin-bottom:20px;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
+                <div>
+                    <h1 id="titulo-hab" style="font-size:26px;"></h1>
+                    <p id="tipo-badge" style="margin-top:8px;"></p>
+                </div>
+                <div style="text-align:right;">
+                    <p class="precio" id="precio-hab"></p>
+                    <p style="font-size:13px;color:#64748b;" id="noches-total"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Descripción y características -->
+        <div class="card" style="margin-bottom:20px;">
+            <h3 style="font-size:17px;margin-bottom:12px;">Descripción</h3>
+            <p id="descripcion-hab" style="font-size:14px;color:#475569;line-height:1.7;"></p>
+
+            <div style="display:flex;gap:16px;margin-top:18px;flex-wrap:wrap;">
+                <div style="background:#f3f6fb;border-radius:12px;padding:12px 16px;flex:1;min-width:120px;">
+                    <span style="font-size:12px;color:#64748b;">Capacidad</span>
+                    <p id="capacidad-hab" style="font-weight:800;font-size:18px;margin-top:4px;"></p>
+                </div>
+                <div style="background:#f3f6fb;border-radius:12px;padding:12px 16px;flex:1;min-width:120px;">
+                    <span style="font-size:12px;color:#64748b;">Número</span>
+                    <p id="numero-hab" style="font-weight:800;font-size:18px;margin-top:4px;"></p>
+                </div>
+                <div style="background:#f3f6fb;border-radius:12px;padding:12px 16px;flex:1;min-width:120px;">
+                    <span style="font-size:12px;color:#64748b;">Estado</span>
+                    <p id="estado-hab" style="font-weight:800;font-size:18px;margin-top:4px;"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resumen de fechas (guardadas de la búsqueda) -->
+        <div class="resumen-card" id="resumen-fechas" style="display:none;">
+            <h3 style="font-size:15px;margin-bottom:14px;">Tu selección</h3>
+            <div class="resumen-grid">
+                <div class="resumen-item">
+                    <span>Check-in</span>
+                    <strong id="res-checkin"></strong>
+                </div>
+                <div class="resumen-item">
+                    <span>Check-out</span>
+                    <strong id="res-checkout"></strong>
+                </div>
+                <div class="resumen-item">
+                    <span>Total estimado</span>
+                    <strong id="res-total"></strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Acciones (HU4: seleccionar habitación) -->
+        <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:20px;">
+            <a id="btn-volver" href="habitaciones.html" class="btn btn-secondary">← Cambiar habitación</a>
+            <button id="btn-seleccionar" class="btn btn-primary">Seleccionar esta habitación →</button>
+        </div>
+
+    </div>
+
+    <div id="error-msg" class="alert alert-error" style="display:none;"></div>
+
+</div>
+
+<script src="js/config.js"></script>
+<script>
+    const params    = new URLSearchParams(window.location.search);
+    const idHab     = params.get("id");
+    const checkin   = params.get("checkin");
+    const checkout  = params.get("checkout");
+
+    // Restaurar link volver con parámetros
+    if (checkin && checkout) {
+        const linkVolver = `habitaciones.html?checkin=${checkin}&checkout=${checkout}`;
+        document.getElementById("link-volver").href  = linkVolver;
+        document.getElementById("btn-volver").href   = linkVolver;
+    }
+
+    async function cargarDetalle() {
+        if (!idHab) {
+            mostrarError("No se especificó la habitación.");
+            return;
+        }
+        try {
+            const resp = await fetch(`${API_BASE}/api/habitaciones/${idHab}`);
+            const data = await resp.json();
+
+            if (!resp.ok) { mostrarError(data.error); return; }
+
+            document.getElementById("loading").style.display = "none";
+            document.getElementById("contenido").style.display = "block";
+
+            document.getElementById("titulo-hab").textContent = `Habitación ${data.numero}`;
+            document.getElementById("tipo-badge").innerHTML =
+                `<span class="badge badge-disponible">${data.tipo}</span>`;
+            document.getElementById("precio-hab").innerHTML =
+                `S/ ${parseFloat(data.precio_base).toFixed(2)} <span>/ noche</span>`;
+            document.getElementById("descripcion-hab").textContent = data.descripcion;
+            document.getElementById("capacidad-hab").textContent =
+                `${data.capacidad} persona${data.capacidad > 1 ? "s" : ""}`;
+            document.getElementById("numero-hab").textContent = data.numero;
+            document.getElementById("estado-hab").textContent = data.estado;
+
+            // Mostrar resumen si hay fechas
+            if (checkin && checkout) {
+                const d1    = new Date(checkin + "T00:00:00");
+                const d2    = new Date(checkout + "T00:00:00");
+                const noches = Math.round((d2 - d1) / 86400000);
+                const total  = (parseFloat(data.precio_base) * noches).toFixed(2);
+
+                document.getElementById("res-checkin").textContent  = checkin;
+                document.getElementById("res-checkout").textContent = checkout;
+                document.getElementById("res-total").textContent    = `S/ ${total}`;
+                document.getElementById("noches-total").textContent = `${noches} noche(s) · Total S/ ${total}`;
+                document.getElementById("resumen-fechas").style.display = "block";
+
+                // HU4: guardar selección en localStorage y pasar a datos
+                document.getElementById("btn-seleccionar").addEventListener("click", function () {
+                    localStorage.setItem("reserva_hab", JSON.stringify({
+                        id_habitacion: data.id_habitacion,
+                        numero:        data.numero,
+                        tipo:          data.tipo,
+                        precio_base:   data.precio_base,
+                        descripcion:   data.descripcion,
+                        checkin,
+                        checkout,
+                        noches,
+                        precio_total: parseFloat(total),
+                    }));
+                    window.location.href = "datos.html";
+                });
+            } else {
+                document.getElementById("btn-seleccionar").textContent = "Buscar disponibilidad";
+                document.getElementById("btn-seleccionar").addEventListener("click", function () {
+                    window.location.href = "index.html";
+                });
+            }
+
+        } catch (err) {
+            mostrarError("Error al conectar con el servidor.");
+        }
+    }
+
+    function mostrarError(msg) {
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("error-msg").textContent = msg;
+        document.getElementById("error-msg").style.display = "block";
+    }
+
+    cargarDetalle();
+</script>
+
+</body>
+</html>
