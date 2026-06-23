@@ -14,31 +14,73 @@ VALUES
     'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&q=80&fit=crop'
 ),
 (
-    '102', 'Doble', 180.00,
+    '102', 'Simple', 115.00,
+    'Habitación simple luminosa con cama individual, baño privado, aire acondicionado y WiFi.',
+    'Disponible', 1,
+    'https://images.unsplash.com/photo-1505693314120-0d443867891c?w=800&q=80&fit=crop'
+),
+(
+    '103', 'Simple', 125.00,
+    'Habitación simple con vista al jardín, cama individual, baño privado y WiFi.',
+    'Disponible', 1,
+    'https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?w=800&q=80&fit=crop'
+),
+(
+    '104', 'Simple', 108.00,
+    'Habitación simple económica con cama individual, baño privado y WiFi.',
+    'Disponible', 1,
+    'https://images.unsplash.com/photo-1540518614846-7eded433c457?w=800&q=80&fit=crop'
+),
+(
+    '201', 'Doble', 180.00,
     'Habitación doble con dos camas individuales, baño privado, TV, escritorio y WiFi.',
     'Disponible', 2,
     'https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=800&q=80&fit=crop'
 ),
 (
-    '103', 'Doble', 195.00,
+    '202', 'Doble', 195.00,
     'Habitación doble con cama matrimonial, baño privado, TV, frigobar y WiFi.',
     'Disponible', 2,
     'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800&q=80&fit=crop'
 ),
 (
-    '201', 'Suite', 320.00,
+    '203', 'Doble', 185.00,
+    'Habitación doble con dos camas twin, escritorio amplio, baño privado y WiFi.',
+    'Disponible', 2,
+    'https://images.unsplash.com/photo-1574643156929-51fa098b0394?w=800&q=80&fit=crop'
+),
+(
+    '204', 'Doble', 200.00,
+    'Habitación doble con cama matrimonial king, baño con tina, frigobar y WiFi.',
+    'Disponible', 2,
+    'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800&q=80&fit=crop'
+),
+(
+    '301', 'Suite', 320.00,
     'Suite amplia con cama king, sala de estar, minibar, jacuzzi y vista al mar.',
     'Disponible', 2,
     'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&q=80&fit=crop'
 ),
 (
-    '202', 'Suite', 350.00,
+    '302', 'Suite', 350.00,
     'Suite premium con terraza privada, cama king, sala, minibar y vista panorámica.',
     'Disponible', 3,
     'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=800&q=80&fit=crop'
 ),
 (
-    '301', 'Simple', 110.00,
+    '303', 'Suite', 300.00,
+    'Suite junior con sala de estar, cama king, jacuzzi y vista a la ciudad.',
+    'Disponible', 2,
+    'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=800&q=80&fit=crop'
+),
+(
+    '304', 'Suite', 380.00,
+    'Suite presidencial con terraza panorámica, sala, comedor, cama king y jacuzzi.',
+    'Disponible', 4,
+    'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&q=80&fit=crop'
+),
+(
+    '401', 'Simple', 110.00,
     'Habitación simple acogedora con cama individual, baño privado y WiFi.',
     'Bloqueada', 1,
     'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800&q=80&fit=crop'
@@ -61,7 +103,7 @@ VALUES
     360.00, 'pendiente'
 ),
 (
-    'RES-DEMO02', 3,
+    'RES-DEMO02', 5,
     'María', 'Torres Quispe', '52341678',
     'maria.torres@outlook.com', '943215678',
     CURRENT_DATE + INTERVAL '1 day',
