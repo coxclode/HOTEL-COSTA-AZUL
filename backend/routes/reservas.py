@@ -1,5 +1,7 @@
 from flask import Blueprint, request, jsonify
 from datetime import datetime
+import re, os
+import requests as http_requests
 from db import get_connection, get_cursor
 from services.reservas_service import (
     generar_codigo_reserva,
@@ -8,6 +10,40 @@ from services.reservas_service import (
 )
 
 reservas_bp = Blueprint("reservas", __name__)
+
+
+# ── HU5: Verificar DNI contra RENIEC (apis.net.pe) ──
+@reservas_bp.route("/api/dni/<dni>", methods=["GET"])
+def consultar_dni(dni):
+    if not re.match(r'^\d{8}$', dni):
+        return jsonify({"error": "El DNI debe tener exactamente 8 dígitos"}), 400
+
+    token = os.getenv("APIS_NET_PE_TOKEN", "")
+    if not token:
+        return jsonify({"error": "Servicio de verificación DNI no configurado"}), 503
+
+    try:
+        resp = http_requests.get(
+            f"https://api.apis.net.pe/v2/reniec/dni?numero={dni}",
+            headers={"Authorization": f"Bearer {token}", "Accept": "application/json"},
+            timeout=6,
+        )
+        if resp.status_code == 200:
+            data = resp.json()
+            return jsonify({
+                "nombres":          data.get("nombres", ""),
+                "apellido_paterno": data.get("apellidoPaterno", ""),
+                "apellido_materno": data.get("apellidoMaterno", ""),
+                "verificado":       True,
+            })
+        elif resp.status_code == 404:
+            return jsonify({"error": "DNI no encontrado en RENIEC"}), 404
+        else:
+            return jsonify({"error": "Error al consultar RENIEC"}), 502
+    except http_requests.exceptions.Timeout:
+        return jsonify({"error": "Tiempo de espera agotado al consultar RENIEC"}), 504
+    except Exception as e:
+        return jsonify({"error": "Error de conexión con RENIEC"}), 500
 
 
 # ── HU6 / HU7: Crear reserva (Sprint 2 confirmar → Sprint 3 generar) ──

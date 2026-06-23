@@ -31,17 +31,21 @@
                     <input type="date" id="checkout" required>
                 </div>
                 <div class="form-group">
-                    <label>Tipo</label>
+                    <label>Tipo de habitación</label>
                     <select id="tipo">
-                        <option value="">Todos</option>
+                        <option value="">Todos los tipos</option>
                         <option value="Simple">Simple</option>
                         <option value="Doble">Doble</option>
                         <option value="Suite">Suite</option>
                     </select>
                 </div>
                 <div class="form-group">
+                    <label>Precio mín. (S/)</label>
+                    <input type="number" id="precio_min" placeholder="Sin mínimo" min="0">
+                </div>
+                <div class="form-group">
                     <label>Precio máx. (S/)</label>
-                    <input type="number" id="precio_max" placeholder="Sin límite" min="0">
+                    <input type="number" id="precio_max" placeholder="Sin máximo" min="0">
                 </div>
                 <div>
                     <button type="submit" class="btn btn-primary" style="width:100%">Actualizar</button>
@@ -60,15 +64,17 @@
 <script src="js/habitaciones.js"></script>
 <script>
     // Pre-cargar parámetros de URL en los inputs
-    const params  = new URLSearchParams(window.location.search);
-    const checkin  = params.get("checkin")   || "";
-    const checkout = params.get("checkout")  || "";
-    const tipo     = params.get("tipo")      || "";
+    const params   = new URLSearchParams(window.location.search);
+    const checkin  = params.get("checkin")    || "";
+    const checkout = params.get("checkout")   || "";
+    const tipo     = params.get("tipo")       || "";
+    const precioMin = params.get("precio_min") || "";
     const precioMax = params.get("precio_max") || "";
 
     document.getElementById("checkin").value    = checkin;
     document.getElementById("checkout").value   = checkout;
     document.getElementById("tipo").value       = tipo;
+    document.getElementById("precio_min").value = precioMin;
     document.getElementById("precio_max").value = precioMax;
 
     // Refinar búsqueda
@@ -78,15 +84,17 @@
             checkin:  document.getElementById("checkin").value,
             checkout: document.getElementById("checkout").value,
         });
-        const t = document.getElementById("tipo").value;
-        const p = document.getElementById("precio_max").value;
-        if (t) nuevosParams.append("tipo", t);
-        if (p) nuevosParams.append("precio_max", p);
+        const t  = document.getElementById("tipo").value;
+        const pn = document.getElementById("precio_min").value;
+        const px = document.getElementById("precio_max").value;
+        if (t)  nuevosParams.append("tipo", t);
+        if (pn) nuevosParams.append("precio_min", pn);
+        if (px) nuevosParams.append("precio_max", px);
         window.location.href = `habitaciones.html?${nuevosParams.toString()}`;
     });
 
     // Cargar habitaciones disponibles
-    buscarHabitaciones(checkin, checkout, tipo, precioMax);
+    buscarHabitaciones(checkin, checkout, tipo, precioMin, precioMax);
 </script>
 
 </body>

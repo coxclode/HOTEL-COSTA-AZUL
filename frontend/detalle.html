@@ -24,11 +24,11 @@
 
     <div id="contenido" style="display:none;">
 
-        <!-- Imagen / icono -->
-        <div style="height:220px;background:linear-gradient(135deg,#0f4c81,#0b2f4f);
-                    border-radius:20px;display:flex;align-items:center;
-                    justify-content:center;font-size:80px;color:rgba(255,255,255,.6);
-                    margin-bottom:24px;">
+        <!-- Imagen / icono (HU3) -->
+        <div id="img-habitacion" style="height:280px;border-radius:20px;overflow:hidden;
+                    margin-bottom:24px;background:linear-gradient(135deg,#0f4c81,#0b2f4f);
+                    display:flex;align-items:center;justify-content:center;
+                    font-size:80px;color:rgba(255,255,255,.6);">
             🛏️
         </div>
 
@@ -125,6 +125,14 @@
 
             document.getElementById("loading").style.display = "none";
             document.getElementById("contenido").style.display = "block";
+
+            // Mostrar imagen real si existe (HU3)
+            const imgEl = document.getElementById("img-habitacion");
+            if (data.imagen) {
+                imgEl.innerHTML = `<img src="${data.imagen}" alt="Habitación ${data.tipo}"
+                    style="width:100%;height:100%;object-fit:cover;"
+                    onerror="this.parentElement.innerHTML='<span style=font-size:80px>🛏️</span>'">`;
+            }
 
             document.getElementById("titulo-hab").textContent = `Habitación ${data.numero}`;
             document.getElementById("tipo-badge").innerHTML =

@@ -55,9 +55,9 @@
                     <input type="text" id="apellido" placeholder="Ej: Mendoza Avila" required>
                 </div>
                 <div class="form-group">
-                    <label>DNI *</label>
+                    <label>DNI * <span id="dni-estado" style="font-weight:400;font-size:12px;"></span></label>
                     <input type="text" id="dni" placeholder="Ej: 45678901"
-                           maxlength="8" pattern="\d{8}" required>
+                           maxlength="8" pattern="\d{8}" required autocomplete="off">
                 </div>
                 <div class="form-group">
                     <label>Teléfono *</label>
@@ -110,6 +110,51 @@
             </div>`;
     }
 
+    // ── Verificación DNI automática (HU5) ──
+    let dniVerificado = false;
+
+    document.getElementById("dni").addEventListener("input", async function () {
+        const dni = this.value.trim();
+        const estadoEl = document.getElementById("dni-estado");
+
+        if (dni.length < 8) {
+            estadoEl.textContent = "";
+            dniVerificado = false;
+            return;
+        }
+        if (!/^\d{8}$/.test(dni)) {
+            estadoEl.textContent = "⚠ Solo dígitos";
+            estadoEl.style.color = "#991b1b";
+            dniVerificado = false;
+            return;
+        }
+
+        estadoEl.textContent = "⏳ Verificando...";
+        estadoEl.style.color = "#92400e";
+        dniVerificado = false;
+
+        try {
+            const resp = await fetch(`${API_BASE}/api/dni/${dni}`);
+            const data = await resp.json();
+
+            if (resp.ok && data.verificado) {
+                document.getElementById("nombre").value   = data.nombres;
+                document.getElementById("apellido").value = `${data.apellido_paterno} ${data.apellido_materno}`;
+                estadoEl.textContent = "✔ Verificado en RENIEC";
+                estadoEl.style.color = "#166534";
+                dniVerificado = true;
+            } else {
+                estadoEl.textContent = `✘ ${data.error || "No encontrado en RENIEC"}`;
+                estadoEl.style.color = "#991b1b";
+                dniVerificado = false;
+            }
+        } catch {
+            estadoEl.textContent = "✘ Sin conexión con RENIEC";
+            estadoEl.style.color = "#991b1b";
+            dniVerificado = false;
+        }
+    });
+
     document.getElementById("form-datos").addEventListener("submit", function (e) {
         e.preventDefault();
         const errEl = document.getElementById("error-datos");
@@ -130,10 +175,14 @@
             errEl.style.display = "block";
             return;
         }
+        if (!dniVerificado) {
+            errEl.textContent = "El DNI debe ser verificado en RENIEC antes de continuar.";
+            errEl.style.display = "block";
+            return;
+        }
 
         errEl.style.display = "none";
 
-        // Guardar datos del cliente en localStorage
         const datosCliente = { nombre, apellido, dni, correo, telefono };
         localStorage.setItem("reserva_cliente", JSON.stringify(datosCliente));
 

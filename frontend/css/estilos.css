@@ -234,7 +234,7 @@ tr:hover td { background: #f8fbff; }
 }
 .buscador-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr auto;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 14px;
     align-items: end;
 }
@@ -322,7 +322,8 @@ tr:hover td { background: #f8fbff; }
     .layout { flex-direction: column; }
     .sidebar { position: relative; width: 100%; padding: 20px; }
     .main-content { margin-left: 0; width: 100%; padding: 20px; }
-    .form-grid, .form-grid-3, .buscador-grid { grid-template-columns: 1fr; }
+    .form-grid, .form-grid-3, .buscador-grid { grid-template-columns: 1fr 1fr; }
+    .buscador-grid > div:last-child { grid-column: 1 / -1; }
     .resumen-grid { grid-template-columns: 1fr 1fr; }
     .hero h1 { font-size: 32px; }
 }

@@ -1,6 +1,6 @@
 // ── HU2: Buscar y mostrar habitaciones disponibles ──
 
-async function buscarHabitaciones(checkin, checkout, tipo, precioMax) {
+async function buscarHabitaciones(checkin, checkout, tipo, precioMin, precioMax) {
     const contenedor = document.getElementById("contenedor-resultado");
     const infoEl     = document.getElementById("info-busqueda");
 
@@ -16,6 +16,7 @@ async function buscarHabitaciones(checkin, checkout, tipo, precioMax) {
 
     const params = new URLSearchParams({ checkin, checkout });
     if (tipo)      params.append("tipo", tipo);
+    if (precioMin) params.append("precio_min", precioMin);
     if (precioMax) params.append("precio_max", precioMax);
 
     try {
@@ -40,12 +41,18 @@ async function buscarHabitaciones(checkin, checkout, tipo, precioMax) {
         }
 
         const cards = data.habitaciones.map(h => {
-            const iconos = { Simple: "🛏️", Doble: "🛏️🛏️", Suite: "🌟" };
-            const icono  = iconos[h.tipo] || "🛏️";
+            const iconos  = { Simple: "🛏️", Doble: "🛏️🛏️", Suite: "🌟" };
             const urlDetalle = `detalle.html?id=${h.id_habitacion}&checkin=${checkin}&checkout=${checkout}`;
+
+            const imgHtml = h.imagen
+                ? `<img src="${h.imagen}" alt="Habitación ${h.tipo}"
+                        style="width:100%;height:100%;object-fit:cover;"
+                        onerror="this.parentElement.innerHTML='<span style=font-size:54px>${iconos[h.tipo] || "🛏️"}</span>'">`
+                : `<span style="font-size:54px;">${iconos[h.tipo] || "🛏️"}</span>`;
+
             return `
                 <div class="habitacion-card">
-                    <div class="habitacion-card-img">${icono}</div>
+                    <div class="habitacion-card-img">${imgHtml}</div>
                     <div class="habitacion-card-body">
                         <h3>Habitación ${h.numero} · ${h.tipo}</h3>
                         <p>${h.descripcion}</p>
