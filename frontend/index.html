@@ -34,17 +34,21 @@
                     <input type="date" id="checkout" name="checkout" required>
                 </div>
                 <div class="form-group">
-                    <label>Tipo</label>
+                    <label>Tipo de habitación</label>
                     <select id="tipo" name="tipo">
-                        <option value="">Todos</option>
+                        <option value="">Todos los tipos</option>
                         <option value="Simple">Simple</option>
                         <option value="Doble">Doble</option>
                         <option value="Suite">Suite</option>
                     </select>
                 </div>
                 <div class="form-group">
+                    <label>Precio mín. (S/)</label>
+                    <input type="number" id="precio_min" name="precio_min" placeholder="Sin mínimo" min="0">
+                </div>
+                <div class="form-group">
                     <label>Precio máx. (S/)</label>
-                    <input type="number" id="precio_max" name="precio_max" placeholder="Sin límite" min="0">
+                    <input type="number" id="precio_max" name="precio_max" placeholder="Sin máximo" min="0">
                 </div>
                 <div>
                     <button type="submit" class="btn btn-primary" style="width:100%">
@@ -89,7 +93,7 @@
         <div style="flex:1;min-width:200px;">
             <h3 style="font-size:20px;margin-bottom:10px;">Ubicación</h3>
             <p style="color:#64748b;font-size:14px;line-height:1.6;">
-                Av. España 1234, Trujillo, La Libertad, Perú<br>
+                Av. César Vallejo 1795, Trujillo 13006, La Libertad, Perú<br>
                 📞 (044) 123-456 &nbsp;·&nbsp; 📧 reservas@hotelcostaazul.pe
             </p>
         </div>
@@ -116,6 +120,7 @@
         const checkin   = document.getElementById("checkin").value;
         const checkout  = document.getElementById("checkout").value;
         const tipo      = document.getElementById("tipo").value;
+        const precioMin = document.getElementById("precio_min").value;
         const precioMax = document.getElementById("precio_max").value;
         const errEl     = document.getElementById("error-fechas");
 
@@ -134,6 +139,7 @@
 
         const params = new URLSearchParams({ checkin, checkout });
         if (tipo)      params.append("tipo", tipo);
+        if (precioMin) params.append("precio_min", precioMin);
         if (precioMax) params.append("precio_max", precioMax);
 
         window.location.href = `habitaciones.html?${params.toString()}`;
