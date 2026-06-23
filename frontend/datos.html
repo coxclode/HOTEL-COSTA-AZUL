@@ -143,15 +143,21 @@
                 estadoEl.textContent = "✔ Verificado en RENIEC";
                 estadoEl.style.color = "#166534";
                 dniVerificado = true;
-            } else {
-                estadoEl.textContent = `✘ ${data.error || "No encontrado en RENIEC"}`;
+            } else if (resp.status === 404) {
+                estadoEl.textContent = "✘ DNI no encontrado en RENIEC";
                 estadoEl.style.color = "#991b1b";
                 dniVerificado = false;
+            } else {
+                // Servicio RENIEC no disponible — permitir ingreso manual
+                estadoEl.textContent = "⚠ RENIEC no disponible. Ingresa tu nombre manualmente.";
+                estadoEl.style.color = "#92400e";
+                dniVerificado = true;
             }
         } catch {
-            estadoEl.textContent = "✘ Sin conexión con RENIEC";
-            estadoEl.style.color = "#991b1b";
-            dniVerificado = false;
+            // Sin conexión con el backend — permitir ingreso manual
+            estadoEl.textContent = "⚠ Sin conexión con RENIEC. Ingresa tu nombre manualmente.";
+            estadoEl.style.color = "#92400e";
+            dniVerificado = true;
         }
     });
 
@@ -176,7 +182,7 @@
             return;
         }
         if (!dniVerificado) {
-            errEl.textContent = "El DNI debe ser verificado en RENIEC antes de continuar.";
+            errEl.textContent = "El DNI ingresado no fue encontrado en RENIEC. Verifica el número e inténtalo de nuevo.";
             errEl.style.display = "block";
             return;
         }
