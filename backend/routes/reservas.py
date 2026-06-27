@@ -39,102 +39,91 @@ def _codigo_operacion(metodo: str) -> str:
     return f"{prefijo}-{datetime.now().strftime('%Y%m%d%H%M%S')}-{sufijo}"
 
 
-# ── Base de datos demo para RENIEC (DEMO_RENIEC=true) ──
-_DEMO_RENIEC = {
-    "76239564": ("JORGE LUIS",    "MENDOZA",   "AVILA"),
-    "12345678": ("JUAN CARLOS",   "GARCIA",    "LOPEZ"),
-    "87654321": ("MARIA ELENA",   "TORRES",    "RIOS"),
-    "45678901": ("CARLOS ANDRES", "RAMIREZ",   "SILVA"),
-    "98765432": ("ANA LUCIA",     "FLORES",    "VEGA"),
-    "11111111": ("PEDRO PABLO",   "CASTILLO",  "MORALES"),
-    "22222222": ("LUCIA SOFIA",   "HERRERA",   "CAMPOS"),
-    "33333333": ("MIGUEL ANGEL",  "VARGAS",    "LUNA"),
-    "44444444": ("ROSA MARIA",    "GUTIERREZ", "PAREDES"),
-    "55555555": ("LUIS ALBERTO",  "MENDEZ",    "CHAVEZ"),
-}
+# ── HU5: Verificar DNI contra RENIEC ──
+# Cadena de proveedores (se intenta en orden hasta que uno responda):
+#   1. api.reniec.cloud  — gratuito, sin token
+#   2. apis.net.pe/v2    — requiere APIS_NET_PE_TOKEN
+# Si ambos fallan, el frontend permite ingresar datos manualmente.
 
-_NOMBRES_DEMO  = ["ALEX", "CARLOS", "DIANA", "ELENA", "FERNANDO",
-                   "GABRIELA", "HUGO", "ISABEL", "JORGE", "KAREN"]
-_APELLIDOS_DEMO = ["QUISPE", "MAMANI", "CONDORI", "HUANCA", "CCAMA",
-                   "PILCO", "APAZA", "CALLA", "CHURA", "LLANOS"]
-
-
-def _demo_reniec(dni: str) -> dict:
-    """Devuelve datos simulados para cualquier DNI de 8 dígitos."""
-    if dni in _DEMO_RENIEC:
-        nombres, ap, am = _DEMO_RENIEC[dni]
-    else:
-        idx = int(dni) % 10
-        nombres = _NOMBRES_DEMO[idx]
-        ap      = _APELLIDOS_DEMO[(int(dni[2]) + int(dni[4])) % 10]
-        am      = _APELLIDOS_DEMO[(int(dni[1]) + int(dni[5])) % 10]
+def _construir_respuesta(dni: str, nombres: str, ap: str, am: str) -> dict:
     return {
         "dni": dni,
         "nombres": nombres,
         "apellido_paterno": ap,
         "apellido_materno": am,
-        "nombre_completo": f"{nombres} {ap} {am}",
+        "nombre_completo": " ".join(p for p in [nombres, ap, am] if p),
         "verificado": True,
-        "_demo": True,
     }
 
 
-# ── HU5: Verificar DNI contra RENIEC ──
+def _consultar_reniec_cloud(dni: str):
+    """Proveedor 1: api.reniec.cloud — sin token."""
+    resp = http_requests.get(
+        f"https://api.reniec.cloud/dni/{dni}",
+        timeout=8,
+    )
+    if resp.status_code == 200:
+        data = resp.json()
+        nombres = data.get("nombre") or data.get("nombres") or ""
+        ap      = data.get("apellidoPaterno") or data.get("apellido_paterno") or ""
+        am      = data.get("apellidoMaterno") or data.get("apellido_materno") or ""
+        if nombres or ap:
+            return _construir_respuesta(dni, nombres, ap, am)
+    return None
+
+
+def _consultar_apis_net_pe(dni: str, token: str):
+    """Proveedor 2: apis.net.pe/v2 — requiere token."""
+    resp = http_requests.get(
+        os.getenv("APIS_NET_PE_RENIEC_URL", "https://api.apis.net.pe/v2/reniec/dni"),
+        params={"numero": dni},
+        headers={"Authorization": f"Bearer {token}", "Accept": "application/json"},
+        timeout=8,
+    )
+    if resp.status_code == 200:
+        data = resp.json()
+        if data.get("message"):          # {"message": "Token invalido"}
+            return None
+        nombres = data.get("nombres") or data.get("nombresCompletos") or ""
+        ap      = data.get("apellidoPaterno") or data.get("apellido_paterno") or ""
+        am      = data.get("apellidoMaterno") or data.get("apellido_materno") or ""
+        if nombres or ap:
+            return _construir_respuesta(dni, nombres, ap, am)
+    if resp.status_code == 404:
+        raise ValueError("not_found")
+    return None
+
+
 @reservas_bp.route("/api/dni/<dni>", methods=["GET"])
 def consultar_dni(dni):
     if not re.match(r'^\d{8}$', dni):
         return jsonify({"error": "El DNI debe tener exactamente 8 dígitos"}), 400
 
-    # Modo demo: responde sin llamar a RENIEC real
-    if os.getenv("DEMO_RENIEC", "false").lower() == "true":
-        return jsonify(_demo_reniec(dni))
-
-    token      = os.getenv("APIS_NET_PE_TOKEN", "")
-    reniec_url = os.getenv("APIS_NET_PE_RENIEC_URL", "https://api.apis.net.pe/v2/reniec/dni")
-    if not token:
-        return jsonify(_demo_reniec(dni))   # sin token → demo automático
-
+    # Proveedor 1: reniec.cloud (gratuito, sin token)
     try:
-        resp = http_requests.get(
-            reniec_url,
-            params={"numero": dni},
-            headers={"Authorization": f"Bearer {token}", "Accept": "application/json"},
-            timeout=10,
-        )
-        if resp.status_code == 200:
-            data = resp.json()
+        resultado = _consultar_reniec_cloud(dni)
+        if resultado:
+            return jsonify(resultado)
+    except Exception:
+        pass
 
-            # apis.net.pe devuelve {"message":"Token invalido"} con status 200
-            if data.get("message") and not data.get("nombres") and not data.get("apellidoPaterno"):
-                return jsonify(_demo_reniec(dni))
-
-            nombres          = data.get("nombres") or data.get("nombresCompletos") or ""
-            apellido_paterno = data.get("apellidoPaterno") or data.get("apellido_paterno") or ""
-            apellido_materno = data.get("apellidoMaterno") or data.get("apellido_materno") or ""
-
-            if not nombres and not apellido_paterno and not apellido_materno:
-                return jsonify(_demo_reniec(dni))
-
-            return jsonify({
-                "dni": dni,
-                "nombres": nombres,
-                "apellido_paterno": apellido_paterno,
-                "apellido_materno": apellido_materno,
-                "nombre_completo": " ".join(
-                    p for p in [nombres, apellido_paterno, apellido_materno] if p
-                ),
-                "verificado": True,
-            })
-        elif resp.status_code == 404:
+    # Proveedor 2: apis.net.pe (con token)
+    token = os.getenv("APIS_NET_PE_TOKEN", "")
+    if token:
+        try:
+            resultado = _consultar_apis_net_pe(dni, token)
+            if resultado:
+                return jsonify(resultado)
+        except ValueError:
             return jsonify({"error": "DNI no encontrado en RENIEC"}), 404
-        elif resp.status_code in (401, 403):
-            # Token inválido → caer a demo
-            return jsonify(_demo_reniec(dni))
-        else:
-            return jsonify(_demo_reniec(dni))
+        except Exception:
+            pass
 
-    except (http_requests.exceptions.Timeout, http_requests.exceptions.RequestException):
-        return jsonify(_demo_reniec(dni))
+    # Ambos proveedores fallaron
+    return jsonify({
+        "error": "Servicio RENIEC no disponible temporalmente",
+        "detalle": "Ingresa tus datos manualmente",
+    }), 503
 
 
 # ── HU6 / HU7: Crear reserva ──
