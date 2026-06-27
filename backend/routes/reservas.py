@@ -1,9 +1,12 @@
 from flask import Blueprint, request, jsonify, make_response
 from datetime import datetime
+import logging
 import random
 import re
 import os
 import string
+
+logger = logging.getLogger(__name__)
 
 import requests as http_requests
 from psycopg2.extras import Json
@@ -15,6 +18,11 @@ from services.reservas_service import (
     generar_codigo_reserva,
     calcular_noches,
     calcular_precio_total,
+)
+from services.reniec_service import (
+    get_reniec_service,
+    DniNoEncontrado,
+    TodosLosProveedoresFallaron,
 )
 
 reservas_bp = Blueprint("reservas", __name__)
@@ -40,90 +48,30 @@ def _codigo_operacion(metodo: str) -> str:
 
 
 # ── HU5: Verificar DNI contra RENIEC ──
-# Cadena de proveedores (se intenta en orden hasta que uno responda):
-#   1. api.reniec.cloud  — gratuito, sin token
-#   2. apis.net.pe/v2    — requiere APIS_NET_PE_TOKEN
-# Si ambos fallan, el frontend permite ingresar datos manualmente.
-
-def _construir_respuesta(dni: str, nombres: str, ap: str, am: str) -> dict:
-    return {
-        "dni": dni,
-        "nombres": nombres,
-        "apellido_paterno": ap,
-        "apellido_materno": am,
-        "nombre_completo": " ".join(p for p in [nombres, ap, am] if p),
-        "verificado": True,
-    }
-
-
-def _consultar_reniec_cloud(dni: str):
-    """Proveedor 1: api.reniec.cloud — sin token."""
-    resp = http_requests.get(
-        f"https://api.reniec.cloud/dni/{dni}",
-        timeout=8,
-    )
-    if resp.status_code == 200:
-        data = resp.json()
-        nombres = data.get("nombre") or data.get("nombres") or ""
-        ap      = data.get("apellidoPaterno") or data.get("apellido_paterno") or ""
-        am      = data.get("apellidoMaterno") or data.get("apellido_materno") or ""
-        if nombres or ap:
-            return _construir_respuesta(dni, nombres, ap, am)
-    return None
-
-
-def _consultar_apis_net_pe(dni: str, token: str):
-    """Proveedor 2: apis.net.pe/v2 — requiere token."""
-    resp = http_requests.get(
-        os.getenv("APIS_NET_PE_RENIEC_URL", "https://api.apis.net.pe/v2/reniec/dni"),
-        params={"numero": dni},
-        headers={"Authorization": f"Bearer {token}", "Accept": "application/json"},
-        timeout=8,
-    )
-    if resp.status_code == 200:
-        data = resp.json()
-        if data.get("message"):          # {"message": "Token invalido"}
-            return None
-        nombres = data.get("nombres") or data.get("nombresCompletos") or ""
-        ap      = data.get("apellidoPaterno") or data.get("apellido_paterno") or ""
-        am      = data.get("apellidoMaterno") or data.get("apellido_materno") or ""
-        if nombres or ap:
-            return _construir_respuesta(dni, nombres, ap, am)
-    if resp.status_code == 404:
-        raise ValueError("not_found")
-    return None
-
+# La lógica de failover está encapsulada en ReniecService (services/reniec_service.py).
+# Este controlador solo valida el formato y delega al servicio.
 
 @reservas_bp.route("/api/dni/<dni>", methods=["GET"])
 def consultar_dni(dni):
     if not re.match(r'^\d{8}$', dni):
         return jsonify({"error": "El DNI debe tener exactamente 8 dígitos"}), 400
 
-    # Proveedor 1: reniec.cloud (gratuito, sin token)
     try:
-        resultado = _consultar_reniec_cloud(dni)
-        if resultado:
-            return jsonify(resultado)
-    except Exception:
-        pass
+        datos = get_reniec_service().consultar_dni(dni)
+        return jsonify(datos.to_dict())
 
-    # Proveedor 2: apis.net.pe (con token)
-    token = os.getenv("APIS_NET_PE_TOKEN", "")
-    if token:
-        try:
-            resultado = _consultar_apis_net_pe(dni, token)
-            if resultado:
-                return jsonify(resultado)
-        except ValueError:
-            return jsonify({"error": "DNI no encontrado en RENIEC"}), 404
-        except Exception:
-            pass
+    except DniNoEncontrado:
+        return jsonify({"error": "DNI no encontrado en RENIEC"}), 404
 
-    # Ambos proveedores fallaron
-    return jsonify({
-        "error": "Servicio RENIEC no disponible temporalmente",
-        "detalle": "Ingresa tus datos manualmente",
-    }), 503
+    except TodosLosProveedoresFallaron:
+        return jsonify({
+            "error": "Servicio RENIEC no disponible temporalmente",
+            "detalle": "Ingresa tus datos manualmente",
+        }), 503
+
+    except Exception as exc:
+        logger.error("[RENIEC] error inesperado en consultar_dni: %s", exc)
+        return jsonify({"error": "Error interno al consultar RENIEC"}), 500
 
 
 # ── HU6 / HU7: Crear reserva ──

@@ -5,6 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Datos del cliente - Hotel Costa Azul</title>
     <link rel="stylesheet" href="css/estilos.css">
+    <style>
+        .dni-spinner {
+            display: inline-block;
+            width: 11px; height: 11px;
+            border: 2px solid #f59e0b;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin .6s linear infinite;
+            vertical-align: middle;
+            margin-right: 4px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
 </head>
 <body>
 
@@ -114,24 +127,43 @@
             </div>`;
     }
 
-    // ── Verificación DNI automática (HU5) ──
-    // RENIEC es una ayuda opcional: auto-completa nombre/apellido si está disponible.
-    // Si el servicio no responde o el DNI no se encuentra, el usuario puede
-    // ingresar sus datos manualmente y continuar igualmente.
+    // ── Verificación DNI — HU5 ──
+    // El frontend nunca llama a RENIEC directamente: siempre consulta /api/dni/{dni}.
+    // El backend orquesta los proveedores con failover automático (ReniecService).
+    // Si ningún proveedor responde, el formulario permite ingresar datos manualmente.
 
-    document.getElementById("dni").addEventListener("input", async function () {
+    let _debounceTimer = null;
+
+    function setDniEstado(texto, color, spinner = false) {
+        const el = document.getElementById("dni-estado");
+        el.innerHTML = spinner
+            ? `<span class="dni-spinner"></span> ${texto}`
+            : texto;
+        el.style.color = color;
+    }
+
+    document.getElementById("dni").addEventListener("input", function () {
+        clearTimeout(_debounceTimer);
         const dni = this.value.trim();
         const estadoEl = document.getElementById("dni-estado");
 
-        if (dni.length < 8) { estadoEl.textContent = ""; return; }
-        if (!/^\d{8}$/.test(dni)) {
-            estadoEl.textContent = "⚠ Solo dígitos";
-            estadoEl.style.color = "#991b1b";
+        if (!dni) { estadoEl.textContent = ""; return; }
+        if (!/^\d{1,8}$/.test(dni)) {
+            setDniEstado("Solo se permiten dígitos", "#991b1b");
             return;
         }
+        if (dni.length < 8) { estadoEl.textContent = ""; return; }
 
-        estadoEl.textContent = "Consultando RENIEC…";
-        estadoEl.style.color = "#92400e";
+        // Esperar 400 ms después del último carácter antes de consultar
+        _debounceTimer = setTimeout(() => consultarDni(dni), 400);
+    });
+
+    async function consultarDni(dni) {
+        setDniEstado("Consultando RENIEC…", "#92400e", true);
+
+        // Limpiar campos anteriores
+        document.getElementById("nombre").value   = "";
+        document.getElementById("apellido").value = "";
 
         try {
             const resp = await fetch(`${API_BASE}/api/dni/${dni}`);
@@ -141,26 +173,22 @@
                 document.getElementById("nombre").value   = data.nombres || "";
                 document.getElementById("apellido").value =
                     `${data.apellido_paterno || ""} ${data.apellido_materno || ""}`.trim();
-                estadoEl.textContent = "✔ Verificado en RENIEC";
-                estadoEl.style.color = "#166534";
+                setDniEstado("✔ Verificado en RENIEC", "#166534");
             } else if (resp.status === 404) {
-                estadoEl.textContent = "⚠ No encontrado en RENIEC — ingresa tus datos manualmente";
-                estadoEl.style.color = "#92400e";
+                setDniEstado("⚠ DNI no encontrado — ingresa tus datos manualmente", "#92400e");
+            } else if (resp.status === 503) {
+                setDniEstado("ℹ Servicio RENIEC no disponible — ingresa tus datos manualmente", "#64748b");
             } else {
-                // 503 (token no configurado) u otro error del servidor
-                estadoEl.textContent = "ℹ RENIEC no disponible — ingresa tus datos manualmente";
-                estadoEl.style.color = "#64748b";
+                setDniEstado("ℹ No se pudo verificar — ingresa tus datos manualmente", "#64748b");
             }
         } catch {
-            estadoEl.textContent = "ℹ Sin conexión con RENIEC — ingresa tus datos manualmente";
-            estadoEl.style.color = "#64748b";
+            setDniEstado("ℹ Sin conexión con el servidor — ingresa tus datos manualmente", "#64748b");
         }
-    });
+    }
 
     document.getElementById("form-datos").addEventListener("submit", function (e) {
         e.preventDefault();
-        const errEl = document.getElementById("error-datos");
-
+        const errEl   = document.getElementById("error-datos");
         const nombre   = document.getElementById("nombre").value.trim();
         const apellido = document.getElementById("apellido").value.trim();
         const dni      = document.getElementById("dni").value.trim();
@@ -179,10 +207,7 @@
         }
 
         errEl.style.display = "none";
-
-        const datosCliente = { nombre, apellido, dni, correo, telefono };
-        localStorage.setItem("reserva_cliente", JSON.stringify(datosCliente));
-
+        localStorage.setItem("reserva_cliente", JSON.stringify({ nombre, apellido, dni, correo, telefono }));
         window.location.href = "confirmar.html";
     });
 </script>
