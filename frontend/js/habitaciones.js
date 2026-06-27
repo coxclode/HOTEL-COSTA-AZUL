@@ -1,6 +1,6 @@
 // ── HU2: Buscar y mostrar habitaciones disponibles ──
 
-async function buscarHabitaciones(checkin, checkout, tipo, precioMin, precioMax) {
+async function buscarHabitaciones(checkin, checkout, tipo, precioMin, precioMax, personas = "1") {
     const contenedor = document.getElementById("contenedor-resultado");
     const infoEl     = document.getElementById("info-busqueda");
 
@@ -18,6 +18,7 @@ async function buscarHabitaciones(checkin, checkout, tipo, precioMin, precioMax)
     if (tipo)      params.append("tipo", tipo);
     if (precioMin) params.append("precio_min", precioMin);
     if (precioMax) params.append("precio_max", precioMax);
+    if (personas)  params.append("personas", personas);
 
     try {
         const resp = await fetch(`${API_BASE}/api/habitaciones/disponibles?${params.toString()}`);
@@ -29,7 +30,7 @@ async function buscarHabitaciones(checkin, checkout, tipo, precioMin, precioMax)
         }
 
         infoEl.textContent =
-            `${data.total} habitación(es) disponible(s) para ${checkin} → ${checkout}`;
+            `${data.total} habitación(es) disponible(s) para ${checkin} → ${checkout} · ${personas} persona(s)`;
 
         if (data.total === 0) {
             contenedor.innerHTML = `
@@ -42,7 +43,7 @@ async function buscarHabitaciones(checkin, checkout, tipo, precioMin, precioMax)
 
         const cards = data.habitaciones.map(h => {
             const iconos  = { Simple: "🛏️", Doble: "🛏️🛏️", Suite: "🌟" };
-            const urlDetalle = `detalle.html?id=${h.id_habitacion}&checkin=${checkin}&checkout=${checkout}`;
+            const urlDetalle = `detalle.html?id=${h.id_habitacion}&checkin=${checkin}&checkout=${checkout}&personas=${personas}`;
 
             const imgHtml = h.imagen
                 ? `<img src="${h.imagen}" alt="Habitación ${h.tipo}"

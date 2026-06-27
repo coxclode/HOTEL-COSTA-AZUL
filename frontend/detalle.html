@@ -105,10 +105,11 @@
     const idHab     = params.get("id");
     const checkin   = params.get("checkin");
     const checkout  = params.get("checkout");
+    const personas  = params.get("personas") || "1";
 
     // Restaurar link volver con parámetros
     if (checkin && checkout) {
-        const linkVolver = `habitaciones.html?checkin=${checkin}&checkout=${checkout}`;
+        const linkVolver = `habitaciones.html?checkin=${checkin}&checkout=${checkout}&personas=${personas}`;
         document.getElementById("link-volver").href  = linkVolver;
         document.getElementById("btn-volver").href   = linkVolver;
     }
@@ -169,6 +170,7 @@
                         descripcion:   data.descripcion,
                         checkin,
                         checkout,
+                        personas: parseInt(personas),
                         noches,
                         precio_total: parseFloat(total),
                     }));

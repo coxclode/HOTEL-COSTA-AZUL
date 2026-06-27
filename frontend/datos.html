@@ -104,6 +104,10 @@
                     <strong>${reservaHab.checkin} → ${reservaHab.checkout}</strong>
                 </div>
                 <div class="resumen-item">
+                    <span>Personas</span>
+                    <strong>${reservaHab.personas || 1}</strong>
+                </div>
+                <div class="resumen-item">
                     <span>Total (${reservaHab.noches} noche/s)</span>
                     <strong>S/ ${reservaHab.precio_total.toFixed(2)}</strong>
                 </div>
@@ -129,7 +133,7 @@
             return;
         }
 
-        estadoEl.textContent = "⏳ Verificando...";
+        estadoEl.textContent = "Verificando...";
         estadoEl.style.color = "#92400e";
         dniVerificado = false;
 
@@ -140,7 +144,7 @@
             if (resp.ok && data.verificado) {
                 document.getElementById("nombre").value   = data.nombres;
                 document.getElementById("apellido").value = `${data.apellido_paterno} ${data.apellido_materno}`;
-                estadoEl.textContent = "✔ Verificado en RENIEC";
+                estadoEl.textContent = "Verificado en RENIEC";
                 estadoEl.style.color = "#166534";
                 dniVerificado = true;
             } else if (resp.status === 404) {
@@ -148,16 +152,14 @@
                 estadoEl.style.color = "#991b1b";
                 dniVerificado = false;
             } else {
-                // Servicio RENIEC no disponible — permitir ingreso manual
-                estadoEl.textContent = "⚠ RENIEC no disponible. Ingresa tu nombre manualmente.";
-                estadoEl.style.color = "#92400e";
-                dniVerificado = true;
+                estadoEl.textContent = data.detalle || data.error || "No se pudo consultar RENIEC";
+                estadoEl.style.color = "#991b1b";
+                dniVerificado = false;
             }
         } catch {
-            // Sin conexión con el backend — permitir ingreso manual
-            estadoEl.textContent = "⚠ Sin conexión con RENIEC. Ingresa tu nombre manualmente.";
-            estadoEl.style.color = "#92400e";
-            dniVerificado = true;
+            estadoEl.textContent = "Sin conexión con el backend para consultar RENIEC.";
+            estadoEl.style.color = "#991b1b";
+            dniVerificado = false;
         }
     });
 

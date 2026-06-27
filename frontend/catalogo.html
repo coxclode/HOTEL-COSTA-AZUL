@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo de habitaciones - Hotel Costa Azul</title>
+    <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+
+<nav class="navbar">
+    <a class="brand" href="index.html">🌊 Hotel Costa Azul</a>
+    <nav>
+        <a href="index.html">Inicio</a>
+        <a href="habitaciones.html">Buscar disponibilidad</a>
+        <a href="personal.html">Acceso Personal</a>
+    </nav>
+</nav>
+
+<div style="max-width:1100px;margin:0 auto;padding:36px 24px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:24px;">
+        <div>
+            <h1 style="font-size:28px;margin-bottom:8px;">Catálogo de habitaciones</h1>
+            <p id="catalogo-contador" style="color:#64748b;font-size:14px;">
+                Habitaciones disponibles en el hotel.
+            </p>
+        </div>
+        <a href="index.html" class="btn btn-primary">Reservar ahora</a>
+    </div>
+
+    <div class="alert alert-info" style="margin-bottom:24px;">
+        El catálogo muestra precios base y características. Para reservar, usa la búsqueda por fechas.
+    </div>
+
+    <div id="catalogo-contenedor"></div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/catalogo.js"></script>
+<script>
+    cargarCatalogo();
+</script>
+
+</body>
+</html>

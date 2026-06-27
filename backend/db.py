@@ -1,9 +1,12 @@
 import os
 import psycopg2
 import psycopg2.extras
+from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(Path(__file__).with_name(".env"), override=True)
+if not os.getenv("DATABASE_URL") and os.getenv("\ufeffDATABASE_URL"):
+    os.environ["DATABASE_URL"] = os.getenv("\ufeffDATABASE_URL")
 
 
 def get_connection():

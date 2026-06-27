@@ -13,4 +13,4 @@ def calcular_noches(checkin: date, checkout: date) -> int:
 
 
 def calcular_precio_total(precio_base: float, noches: int) -> float:
-    return round(precio_base * noches, 2)
+    return round(float(precio_base) * noches, 2)

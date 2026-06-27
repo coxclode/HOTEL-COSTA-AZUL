@@ -12,6 +12,7 @@
     <a class="brand" href="index.html">🌊 Hotel Costa Azul</a>
     <nav>
         <a href="index.html">Inicio</a>
+        <a href="catalogo.html">Catálogo</a>
         <a href="personal.html">Acceso Personal</a>
     </nav>
 </nav>
@@ -38,6 +39,10 @@
                         <option value="Doble">Doble</option>
                         <option value="Suite">Suite</option>
                     </select>
+                </div>
+                <div class="form-group">
+                    <label>Personas</label>
+                    <input type="number" id="personas" min="1" value="1" required>
                 </div>
                 <div class="form-group">
                     <label>Precio mín. (S/)</label>
@@ -68,12 +73,14 @@
     const checkin  = params.get("checkin")    || "";
     const checkout = params.get("checkout")   || "";
     const tipo     = params.get("tipo")       || "";
+    const personas = params.get("personas")   || "1";
     const precioMin = params.get("precio_min") || "";
     const precioMax = params.get("precio_max") || "";
 
     document.getElementById("checkin").value    = checkin;
     document.getElementById("checkout").value   = checkout;
     document.getElementById("tipo").value       = tipo;
+    document.getElementById("personas").value   = personas;
     document.getElementById("precio_min").value = precioMin;
     document.getElementById("precio_max").value = precioMax;
 
@@ -83,6 +90,7 @@
         const nuevosParams = new URLSearchParams({
             checkin:  document.getElementById("checkin").value,
             checkout: document.getElementById("checkout").value,
+            personas: document.getElementById("personas").value,
         });
         const t  = document.getElementById("tipo").value;
         const pn = document.getElementById("precio_min").value;
@@ -94,7 +102,7 @@
     });
 
     // Cargar habitaciones disponibles
-    buscarHabitaciones(checkin, checkout, tipo, precioMin, precioMax);
+    buscarHabitaciones(checkin, checkout, tipo, precioMin, precioMax, personas);
 </script>
 
 </body>

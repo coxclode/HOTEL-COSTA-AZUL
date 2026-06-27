@@ -5,6 +5,45 @@ from db import get_connection, get_cursor
 habitaciones_bp = Blueprint("habitaciones", __name__)
 
 
+# ── HU1 / HU3: Catálogo público de habitaciones disponibles ──
+@habitaciones_bp.route("/api/habitaciones", methods=["GET"])
+def catalogo_habitaciones():
+    conexion = None
+    cursor = None
+    try:
+        conexion = get_connection()
+        cursor = get_cursor(conexion)
+
+        cursor.execute("""
+            SELECT id_habitacion, numero, tipo, precio_base,
+                   descripcion, estado, capacidad, imagen
+            FROM habitaciones
+            WHERE estado = 'Disponible'
+            ORDER BY
+                CASE tipo
+                    WHEN 'Simple' THEN 1
+                    WHEN 'Doble' THEN 2
+                    WHEN 'Suite' THEN 3
+                    ELSE 4
+                END,
+                precio_base ASC
+        """)
+
+        habitaciones = [dict(row) for row in cursor.fetchall()]
+        for h in habitaciones:
+            h["precio_base"] = float(h["precio_base"])
+
+        return jsonify({"habitaciones": habitaciones, "total": len(habitaciones)})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conexion:
+            conexion.close()
+
+
 # ── HU2: Buscar habitaciones disponibles con filtros de fecha, tipo y precio ──
 @habitaciones_bp.route("/api/habitaciones/disponibles", methods=["GET"])
 def buscar_disponibles():
@@ -13,6 +52,7 @@ def buscar_disponibles():
     tipo = request.args.get("tipo")
     precio_min = request.args.get("precio_min")
     precio_max = request.args.get("precio_max")
+    personas = request.args.get("personas", "1")
 
     if not checkin or not checkout:
         return jsonify({"error": "checkin y checkout son obligatorios"}), 400
@@ -25,6 +65,14 @@ def buscar_disponibles():
 
     if fecha_checkout <= fecha_checkin:
         return jsonify({"error": "La fecha de salida debe ser posterior a la de entrada"}), 400
+
+    try:
+        cantidad_personas = int(personas)
+    except (ValueError, TypeError):
+        return jsonify({"error": "La cantidad de personas debe ser numerica"}), 400
+
+    if cantidad_personas <= 0:
+        return jsonify({"error": "La cantidad de personas debe ser mayor a cero"}), 400
 
     conexion = None
     cursor = None
@@ -46,6 +94,9 @@ def buscar_disponibles():
                 params.append(float(precio_min))
             except ValueError:
                 pass
+
+        capacidad_filter = " AND h.capacidad >= %s"
+        params.append(cantidad_personas)
         if precio_max:
             try:
                 precio_filter += " AND h.precio_base <= %s"
@@ -61,6 +112,7 @@ def buscar_disponibles():
             WHERE h.estado = 'Disponible'
             {tipo_filter}
             {precio_filter}
+            {capacidad_filter}
             AND h.id_habitacion NOT IN (
                 SELECT r.id_habitacion FROM reservas r
                 WHERE r.estado IN ('pendiente', 'confirmada', 'en_hospedaje')

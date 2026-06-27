@@ -3,7 +3,7 @@
 -- Ejecutar DESPUÉS de postgres_schema.sql
 -- =========================================================
 
-TRUNCATE TABLE notificaciones, reservas, habitaciones RESTART IDENTITY CASCADE;
+TRUNCATE TABLE notificaciones, pagos, reservas, habitaciones RESTART IDENTITY CASCADE;
 
 INSERT INTO habitaciones (numero, tipo, precio_base, descripcion, estado, capacidad, imagen)
 VALUES
@@ -78,6 +78,78 @@ VALUES
     'Suite presidencial con terraza panorámica, sala, comedor, cama king y jacuzzi.',
     'Disponible', 4,
     'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&q=80&fit=crop'
+),
+(
+    '105', 'Simple', 118.00,
+    'Habitación simple con escritorio, baño privado, WiFi y vista interior tranquila.',
+    'Disponible', 1,
+    'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=80&fit=crop'
+),
+(
+    '106', 'Simple', 130.00,
+    'Habitación simple superior con cama plaza y media, aire acondicionado y TV.',
+    'Disponible', 1,
+    'https://images.unsplash.com/photo-1560448075-bb485b067938?w=800&q=80&fit=crop'
+),
+(
+    '107', 'Simple', 112.00,
+    'Habitación simple compacta con baño privado, WiFi y desayuno incluido.',
+    'Disponible', 1,
+    'https://images.unsplash.com/photo-1551776235-dde6d482980b?w=800&q=80&fit=crop'
+),
+(
+    '108', 'Simple', 135.00,
+    'Habitación simple ejecutiva con escritorio amplio, TV y buena iluminación natural.',
+    'Disponible', 1,
+    'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=800&q=80&fit=crop'
+),
+(
+    '205', 'Doble', 210.00,
+    'Habitación doble familiar con cama matrimonial, cama individual y baño privado.',
+    'Disponible', 3,
+    'https://images.unsplash.com/photo-1598928636135-d146006ff4be?w=800&q=80&fit=crop'
+),
+(
+    '206', 'Doble', 175.00,
+    'Habitación doble estándar con dos camas, ventilación natural y WiFi.',
+    'Disponible', 2,
+    'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=800&q=80&fit=crop'
+),
+(
+    '207', 'Doble', 220.00,
+    'Habitación doble superior con frigobar, TV, escritorio y vista a la ciudad.',
+    'Disponible', 2,
+    'https://images.unsplash.com/photo-1595576508898-0ad5c879a061?w=800&q=80&fit=crop'
+),
+(
+    '208', 'Doble', 230.00,
+    'Habitación doble premium con cama queen, baño moderno y zona de trabajo.',
+    'Disponible', 2,
+    'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=800&q=80&fit=crop'
+),
+(
+    '305', 'Suite', 340.00,
+    'Suite ejecutiva con sala pequeña, cama king, minibar y baño con tina.',
+    'Disponible', 3,
+    'https://images.unsplash.com/photo-1590490359683-658d3d23f972?w=800&q=80&fit=crop'
+),
+(
+    '306', 'Suite', 360.00,
+    'Suite familiar con dos ambientes, cama king, sofá cama y vista al jardín.',
+    'Disponible', 4,
+    'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80&fit=crop'
+),
+(
+    '307', 'Suite', 390.00,
+    'Suite deluxe con terraza, jacuzzi, minibar y sala de estar independiente.',
+    'Disponible', 4,
+    'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800&q=80&fit=crop'
+),
+(
+    '308', 'Suite', 310.00,
+    'Suite junior acogedora con cama king, escritorio, baño privado y WiFi.',
+    'Disponible', 2,
+    'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80&fit=crop'
 ),
 (
     '401', 'Simple', 110.00,

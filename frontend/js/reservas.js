@@ -24,6 +24,7 @@ async function generarReserva() {
         telefono:  cliente.telefono,
         checkin:   hab.checkin,
         checkout:  hab.checkout,
+        personas:  hab.personas || 1,
     };
 
     try {
@@ -42,9 +43,9 @@ async function generarReserva() {
             return;
         }
 
-        // Guardar resultado y redirigir a página de éxito
+        // Guardar reserva pendiente y redirigir al pago (HU9)
         localStorage.setItem("reserva_resultado", JSON.stringify(data));
-        window.location.href = "exitosa.html";
+        window.location.href = "pago.html";
 
     } catch (err) {
         errEl.textContent = "No se pudo conectar con el servidor.";

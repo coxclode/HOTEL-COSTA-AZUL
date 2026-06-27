@@ -61,6 +61,22 @@
     </div>
 </div>
 
+<!-- Modal detalle de reserva (HU17 - click redirección) -->
+<div id="modal-detalle"
+     style="display:none;position:fixed;inset:0;background:rgba(10,22,40,.55);
+            z-index:9999;align-items:center;justify-content:center;padding:24px;">
+    <div style="background:#fff;border-radius:20px;padding:32px;max-width:560px;
+                width:100%;box-shadow:0 24px 64px rgba(10,22,40,.3);position:relative;">
+        <button onclick="cerrarModal()"
+                style="position:absolute;top:16px;right:16px;background:none;border:none;
+                       font-size:22px;cursor:pointer;color:#64748b;">✕</button>
+        <div id="modal-cuerpo"></div>
+        <div style="margin-top:24px;text-align:right;">
+            <button onclick="cerrarModal()" class="btn btn-secondary btn-sm">Cerrar</button>
+        </div>
+    </div>
+</div>
+
 <script src="../js/config.js"></script>
 <script src="../js/recepcion.js"></script>
 <script>

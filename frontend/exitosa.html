@@ -3,67 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reserva confirmada - Hotel Costa Azul</title>
+    <title>Resultado de pago - Hotel Costa Azul</title>
     <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
 
 <nav class="navbar">
-    <a class="brand" href="index.html">🌊 Hotel Costa Azul</a>
+    <a class="brand" href="index.html">Hotel Costa Azul</a>
 </nav>
 
-<div style="max-width:600px;margin:60px auto;padding:0 24px;text-align:center;">
+<div style="max-width:680px;margin:48px auto;padding:0 24px;text-align:center;">
 
-    <div style="font-size:72px;margin-bottom:16px;">✅</div>
-    <h1 style="font-size:28px;margin-bottom:10px;">¡Reserva generada!</h1>
-    <p style="color:#64748b;font-size:15px;margin-bottom:32px;">
-        Tu reserva está en estado <strong>pendiente</strong>. El equipo del hotel la confirmará en breve.
-    </p>
+    <div id="icono-resultado" style="font-size:72px;margin-bottom:16px;"></div>
+    <h1 id="titulo-resultado" style="font-size:28px;margin-bottom:10px;"></h1>
+    <p id="mensaje-resultado" style="color:#64748b;font-size:15px;margin-bottom:32px;"></p>
 
     <div class="card" style="margin-bottom:24px;text-align:left;">
         <div style="text-align:center;margin-bottom:20px;">
-            <span style="font-size:13px;color:#64748b;">Código de reserva</span>
+            <span style="font-size:13px;color:#64748b;">Codigo de reserva</span>
             <p id="codigo-reserva"
                style="font-size:32px;font-weight:800;color:#0f4c81;letter-spacing:3px;margin-top:6px;">
             </p>
         </div>
+
         <div class="resumen-grid" style="text-align:left;">
             <div class="resumen-item">
-                <span>Check-in</span><strong id="ex-checkin"></strong>
+                <span>Estado reserva</span><strong id="estado-reserva"></strong>
             </div>
             <div class="resumen-item">
-                <span>Check-out</span><strong id="ex-checkout"></strong>
+                <span>Estado pago</span><strong id="estado-pago"></strong>
             </div>
             <div class="resumen-item">
-                <span>Total pagado</span><strong id="ex-total"></strong>
+                <span>Operacion</span><strong id="codigo-operacion"></strong>
+            </div>
+            <div class="resumen-item">
+                <span>Metodo</span><strong id="metodo-pago"></strong>
+            </div>
+            <div class="resumen-item">
+                <span>Monto pagado</span><strong id="monto-pagado"></strong>
+            </div>
+            <div class="resumen-item">
+                <span>Correo</span><strong id="correo-confirmacion"></strong>
             </div>
         </div>
     </div>
 
-    <p style="font-size:13px;color:#64748b;margin-bottom:24px;">
-        Guarda tu código de reserva. Lo necesitarás para el check-in.
-    </p>
+    <div class="card" style="text-align:left;margin-bottom:24px;">
+        <h2 style="font-size:18px;margin-bottom:14px;">Comprobante de pago</h2>
+        <div id="comprobante-html" style="background:#f8fbff;border-radius:12px;padding:18px;font-size:14px;line-height:1.8;"></div>
+        <div style="display:flex;justify-content:flex-end;margin-top:18px;">
+            <a id="link-pdf" class="btn btn-secondary" href="#" target="_blank" rel="noopener">
+                Descargar PDF
+            </a>
+        </div>
+    </div>
 
-    <a href="index.html" class="btn btn-primary">Volver al inicio</a>
+    <a href="index.html" class="btn btn-primary" id="btn-inicio">Volver al inicio</a>
 
 </div>
 
+<script src="js/config.js"></script>
 <script>
-    const resultado = JSON.parse(localStorage.getItem("reserva_resultado") || "null");
-    const hab       = JSON.parse(localStorage.getItem("reserva_hab")       || "null");
+    const pagoResultado = JSON.parse(localStorage.getItem("pago_resultado") || "null");
 
-    if (!resultado) {
+    if (!pagoResultado) {
         window.location.href = "index.html";
     } else {
-        document.getElementById("codigo-reserva").textContent = resultado.codigo_reserva;
-        document.getElementById("ex-checkin").textContent     = hab ? hab.checkin  : "—";
-        document.getElementById("ex-checkout").textContent    = hab ? hab.checkout : "—";
-        document.getElementById("ex-total").textContent       = `S/ ${parseFloat(resultado.precio_total).toFixed(2)}`;
+        const c = pagoResultado.comprobante;
+        const pagoExitoso = c.estado_pago === "exitoso";
 
-        // Limpiar localStorage del flujo
+        document.getElementById("icono-resultado").textContent = pagoExitoso ? "OK" : "X";
+        document.getElementById("titulo-resultado").textContent = pagoExitoso
+            ? "Reserva confirmada"
+            : "Pago rechazado";
+        document.getElementById("mensaje-resultado").textContent = pagoExitoso
+            ? "Tu pago fue validado y la confirmacion fue enviada al correo registrado."
+            : "La reserva quedo rechazada porque el pago no fue validado.";
+
+        document.getElementById("codigo-reserva").textContent = c.codigo_reserva;
+        document.getElementById("estado-reserva").textContent = c.estado_reserva;
+        document.getElementById("estado-pago").textContent = c.estado_pago;
+        document.getElementById("codigo-operacion").textContent = c.codigo_operacion;
+        document.getElementById("metodo-pago").textContent = c.metodo_pago;
+        document.getElementById("monto-pagado").textContent = `S/ ${parseFloat(c.monto_pagado).toFixed(2)}`;
+        document.getElementById("correo-confirmacion").textContent =
+            pagoResultado.correo_enviado ? "Enviado" : "No enviado";
+        document.getElementById("link-pdf").href = `${API_BASE}${pagoResultado.comprobante_pdf_url}`;
+
+        document.getElementById("comprobante-html").innerHTML = `
+            <strong>Hotel Costa Azul</strong><br>
+            Comprobante: ${c.codigo_operacion}<br>
+            Reserva: ${c.codigo_reserva}<br>
+            Cliente: ${c.cliente}<br>
+            Correo: ${c.correo}<br>
+            Habitacion: ${c.habitacion}<br>
+            Fechas: ${c.checkin} al ${c.checkout}<br>
+            Metodo de pago: ${c.metodo_pago}<br>
+            Monto: S/ ${parseFloat(c.monto_pagado).toFixed(2)}<br>
+            Fecha de pago: ${new Date(c.fecha_pago).toLocaleString("es-PE")}<br>
+            Estado: ${c.estado_pago}
+        `;
+
         localStorage.removeItem("reserva_hab");
         localStorage.removeItem("reserva_cliente");
         localStorage.removeItem("reserva_resultado");
+        localStorage.removeItem("pago_resultado");
     }
 </script>
 

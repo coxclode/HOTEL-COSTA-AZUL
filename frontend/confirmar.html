@@ -64,6 +64,9 @@
                 <div class="resumen-item">
                     <span>Noches</span><strong id="conf-noches"></strong>
                 </div>
+                <div class="resumen-item">
+                    <span>Personas</span><strong id="conf-personas"></strong>
+                </div>
             </div>
         </div>
 
@@ -97,7 +100,7 @@
 
     <div style="display:flex;justify-content:space-between;gap:12px;">
         <button class="btn btn-secondary" onclick="history.back()">← Editar datos</button>
-        <button id="btn-confirmar" class="btn btn-primary">Generar reserva</button>
+        <button id="btn-confirmar" class="btn btn-primary">Generar reserva y pagar</button>
     </div>
 
 </div>
@@ -117,6 +120,7 @@
         document.getElementById("conf-checkin").textContent     = hab.checkin;
         document.getElementById("conf-checkout").textContent    = hab.checkout;
         document.getElementById("conf-noches").textContent      = `${hab.noches} noche(s)`;
+        document.getElementById("conf-personas").textContent    = `${hab.personas || 1} persona(s)`;
         document.getElementById("conf-nombre").textContent      = `${cliente.nombre} ${cliente.apellido}`;
         document.getElementById("conf-dni").textContent         = cliente.dni;
         document.getElementById("conf-telefono").textContent    = cliente.telefono;
