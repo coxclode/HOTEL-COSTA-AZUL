@@ -115,51 +115,45 @@
     }
 
     // ── Verificación DNI automática (HU5) ──
-    let dniVerificado = false;
+    // RENIEC es una ayuda opcional: auto-completa nombre/apellido si está disponible.
+    // Si el servicio no responde o el DNI no se encuentra, el usuario puede
+    // ingresar sus datos manualmente y continuar igualmente.
 
     document.getElementById("dni").addEventListener("input", async function () {
         const dni = this.value.trim();
         const estadoEl = document.getElementById("dni-estado");
 
-        if (dni.length < 8) {
-            estadoEl.textContent = "";
-            dniVerificado = false;
-            return;
-        }
+        if (dni.length < 8) { estadoEl.textContent = ""; return; }
         if (!/^\d{8}$/.test(dni)) {
             estadoEl.textContent = "⚠ Solo dígitos";
             estadoEl.style.color = "#991b1b";
-            dniVerificado = false;
             return;
         }
 
-        estadoEl.textContent = "Verificando...";
+        estadoEl.textContent = "Consultando RENIEC…";
         estadoEl.style.color = "#92400e";
-        dniVerificado = false;
 
         try {
             const resp = await fetch(`${API_BASE}/api/dni/${dni}`);
             const data = await resp.json();
 
             if (resp.ok && data.verificado) {
-                document.getElementById("nombre").value   = data.nombres;
-                document.getElementById("apellido").value = `${data.apellido_paterno} ${data.apellido_materno}`;
-                estadoEl.textContent = "Verificado en RENIEC";
+                document.getElementById("nombre").value   = data.nombres || "";
+                document.getElementById("apellido").value =
+                    `${data.apellido_paterno || ""} ${data.apellido_materno || ""}`.trim();
+                estadoEl.textContent = "✔ Verificado en RENIEC";
                 estadoEl.style.color = "#166534";
-                dniVerificado = true;
             } else if (resp.status === 404) {
-                estadoEl.textContent = "✘ DNI no encontrado en RENIEC";
-                estadoEl.style.color = "#991b1b";
-                dniVerificado = false;
+                estadoEl.textContent = "⚠ No encontrado en RENIEC — ingresa tus datos manualmente";
+                estadoEl.style.color = "#92400e";
             } else {
-                estadoEl.textContent = data.detalle || data.error || "No se pudo consultar RENIEC";
-                estadoEl.style.color = "#991b1b";
-                dniVerificado = false;
+                // 503 (token no configurado) u otro error del servidor
+                estadoEl.textContent = "ℹ RENIEC no disponible — ingresa tus datos manualmente";
+                estadoEl.style.color = "#64748b";
             }
         } catch {
-            estadoEl.textContent = "Sin conexión con el backend para consultar RENIEC.";
-            estadoEl.style.color = "#991b1b";
-            dniVerificado = false;
+            estadoEl.textContent = "ℹ Sin conexión con RENIEC — ingresa tus datos manualmente";
+            estadoEl.style.color = "#64748b";
         }
     });
 
@@ -180,11 +174,6 @@
         }
         if (!/^\d{8}$/.test(dni)) {
             errEl.textContent = "El DNI debe tener exactamente 8 dígitos.";
-            errEl.style.display = "block";
-            return;
-        }
-        if (!dniVerificado) {
-            errEl.textContent = "El DNI ingresado no fue encontrado en RENIEC. Verifica el número e inténtalo de nuevo.";
             errEl.style.display = "block";
             return;
         }
