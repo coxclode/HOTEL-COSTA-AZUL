@@ -17,6 +17,10 @@
       "dest": "backend/app.py"
     },
     {
+      "src": "/",
+      "dest": "frontend/index.html"
+    },
+    {
       "src": "/(.*)",
       "dest": "frontend/$1"
     }
