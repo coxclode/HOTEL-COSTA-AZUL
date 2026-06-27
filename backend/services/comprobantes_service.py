@@ -5,26 +5,68 @@ def _pdf_escape(texto) -> str:
     return str(texto).replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
 
 
+_NOMBRE_METODO = {
+    "efectivo":       "Efectivo",
+    "yape":           "Yape",
+    "plin":           "Plin",
+    "tarjeta_credito":"Tarjeta Credito",
+    "tarjeta_debito": "Tarjeta Debito",
+    "transferencia":  "Transferencia",
+    "tarjeta":        "Tarjeta",
+}
+
+
 def generar_pdf_comprobante(comprobante: dict) -> bytes:
+    precio_total = float(
+        comprobante.get("precio_total") or comprobante.get("monto_pagado") or 0
+    )
+    total_pagado = float(comprobante.get("monto_pagado") or precio_total)
+
     lineas = [
         "Hotel Costa Azul",
-        "Comprobante de pago",
+        "Comprobante de Pago",
         "",
-        f"Reserva: {comprobante['codigo_reserva']}",
-        f"Operacion: {comprobante['codigo_operacion']}",
-        f"Cliente: {comprobante['cliente']}",
-        f"Correo: {comprobante['correo']}",
+        f"Reserva:    {comprobante['codigo_reserva']}",
+        f"Operacion:  {comprobante.get('codigo_operacion', '')}",
+        f"Cliente:    {comprobante['cliente']}",
+        f"Correo:     {comprobante['correo']}",
         f"Habitacion: {comprobante['habitacion']}",
-        f"Fechas: {comprobante['checkin']} al {comprobante['checkout']}",
-        f"Metodo: {comprobante['metodo_pago']}",
-        f"Monto: S/ {float(comprobante['monto_pagado']):.2f}",
-        f"Fecha de pago: {comprobante['fecha_pago']}",
-        f"Estado: {comprobante['estado_pago']}",
+        f"Fechas:     {comprobante['checkin']} al {comprobante['checkout']}",
+        "",
+        "--- DETALLE DE PAGOS ---",
+    ]
+
+    pagos = comprobante.get("pagos") or []
+    if pagos:
+        for i, p in enumerate(pagos, 1):
+            monto   = float(p.get("monto", 0))
+            metodo  = _NOMBRE_METODO.get(p.get("metodo_pago", ""), p.get("metodo_pago", ""))
+            cod_op  = p.get("codigo_operacion", "")
+            lineas.append(f"  Pago {i}: {metodo} - S/ {monto:.2f}")
+            if p.get("numero_operacion"):
+                lineas.append(f"           Num. Op: {p['numero_operacion']}")
+            if p.get("vuelto") and float(p["vuelto"]) > 0:
+                lineas.append(f"           Vuelto:  S/ {float(p['vuelto']):.2f}")
+            lineas.append(f"           Cod. Op: {cod_op}")
+    else:
+        metodo = _NOMBRE_METODO.get(
+            comprobante.get("metodo_pago", ""), comprobante.get("metodo_pago", "")
+        )
+        lineas.append(f"  Metodo:    {metodo}")
+        lineas.append(f"  Monto:     S/ {total_pagado:.2f}")
+        lineas.append(f"  Cod. Op:   {comprobante.get('codigo_operacion', '')}")
+
+    lineas += [
+        "",
+        f"TOTAL RESERVA: S/ {precio_total:.2f}",
+        f"TOTAL PAGADO:  S/ {total_pagado:.2f}",
+        f"Estado:        {comprobante.get('estado_reserva', 'confirmada')}",
+        f"Estado pago:   {comprobante.get('estado_pago', 'exitoso')}",
         "",
         f"Generado: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
     ]
 
-    contenido = ["BT", "/F1 12 Tf", "72 760 Td", "16 TL"]
+    contenido = ["BT", "/F1 11 Tf", "50 760 Td", "14 TL"]
     for linea in lineas:
         contenido.append(f"({_pdf_escape(linea)}) Tj")
         contenido.append("T*")

@@ -44,14 +44,12 @@ def catalogo_habitaciones():
             conexion.close()
 
 
-# ── HU2: Buscar habitaciones disponibles con filtros de fecha, tipo y precio ──
+# ── HU2: Buscar habitaciones disponibles con filtros de fecha y tipo ──
 @habitaciones_bp.route("/api/habitaciones/disponibles", methods=["GET"])
 def buscar_disponibles():
     checkin = request.args.get("checkin")
     checkout = request.args.get("checkout")
     tipo = request.args.get("tipo")
-    precio_min = request.args.get("precio_min")
-    precio_max = request.args.get("precio_max")
     personas = request.args.get("personas", "1")
 
     if not checkin or not checkout:
@@ -87,31 +85,16 @@ def buscar_disponibles():
             tipo_filter = "AND h.tipo = %s"
             params.append(tipo)
 
-        precio_filter = ""
-        if precio_min:
-            try:
-                precio_filter += " AND h.precio_base >= %s"
-                params.append(float(precio_min))
-            except ValueError:
-                pass
-
         capacidad_filter = " AND h.capacidad >= %s"
         params.append(cantidad_personas)
-        if precio_max:
-            try:
-                precio_filter += " AND h.precio_base <= %s"
-                params.append(float(precio_max))
-            except ValueError:
-                pass
 
         # Descarta habitaciones Bloqueadas y las que ya tienen reserva que se solapa
         cursor.execute(f"""
             SELECT h.id_habitacion, h.numero, h.tipo, h.precio_base,
-                   h.descripcion, h.capacidad, h.imagen
+                   h.descripcion, h.capacidad, h.imagen, h.estado
             FROM habitaciones h
             WHERE h.estado = 'Disponible'
             {tipo_filter}
-            {precio_filter}
             {capacidad_filter}
             AND h.id_habitacion NOT IN (
                 SELECT r.id_habitacion FROM reservas r

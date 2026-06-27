@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pago de reserva — Hotel Costa Azul</title>
+    <link rel="stylesheet" href="css/estilos.css">
+    <style>
+        /* ── Layout de 2 columnas ── */
+        .pago-layout {
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            gap: 24px;
+            align-items: start;
+        }
+        @media(max-width: 960px) { .pago-layout { grid-template-columns: 1fr; } }
+
+        /* ── Tabs de métodos ── */
+        .metodos-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 22px;
+        }
+        .mtab {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            background: #fff;
+            color: #64748b;
+            transition: all .18s;
+            user-select: none;
+        }
+        .mtab.active {
+            border-color: #0f4c81;
+            background: #0f4c81;
+            color: #fff;
+        }
+        .mtab:hover:not(.active) { border-color: #0f4c81; color: #0f4c81; }
+
+        /* ── Campos por método ── */
+        .campos-metodo { display: none; }
+        .campos-metodo.visible { display: block; }
+
+        /* ── QR placeholder ── */
+        .qr-box {
+            width: 140px; height: 140px;
+            border: 3px dashed #cbd5e1;
+            border-radius: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin: 0 auto 18px;
+            color: #94a3b8;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        /* ── Resumen lateral ── */
+        .resumen-pago {
+            background: linear-gradient(145deg, #0f4c81, #0b2f4f);
+            border-radius: 16px;
+            padding: 22px;
+            color: #fff;
+            margin-bottom: 16px;
+        }
+        .res-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            padding: 5px 0;
+        }
+        .res-row label { color: rgba(255,255,255,.7); }
+        .res-row.pendiente {
+            font-size: 18px;
+            font-weight: 800;
+            border-top: 1px solid rgba(255,255,255,.2);
+            margin-top: 10px;
+            padding-top: 12px;
+        }
+
+        /* ── Lista de pagos ── */
+        .pago-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        .pi-metodo { font-weight: 700; color: #166534; }
+        .pi-meta   { font-size: 11px; color: #64748b; margin-top: 2px; }
+        .pi-monto  { font-weight: 800; color: #15803d; font-size: 15px; }
+
+        /* ── Panel confirmado ── */
+        .confirmado {
+            background: linear-gradient(145deg, #14532d, #15803d);
+            border-radius: 16px;
+            padding: 32px;
+            text-align: center;
+            color: #fff;
+        }
+        .confirmado h2 { font-size: 22px; margin-bottom: 8px; }
+        .confirmado p  { color: rgba(255,255,255,.8); margin-bottom: 24px; }
+        .confirmado-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <a class="brand" href="index.html">Hotel Costa Azul</a>
+</nav>
+
+<div style="max-width:1140px;margin:0 auto;padding:32px 24px;">
+
+    <!-- Stepper -->
+    <div class="stepper">
+        <div class="step"><div class="step-num">1</div><span>Buscar</span></div>
+        <div class="step-line"></div>
+        <div class="step"><div class="step-num">2</div><span>Seleccionar</span></div>
+        <div class="step-line"></div>
+        <div class="step"><div class="step-num">3</div><span>Tus datos</span></div>
+        <div class="step-line"></div>
+        <div class="step"><div class="step-num">4</div><span>Confirmar</span></div>
+        <div class="step-line"></div>
+        <div class="step active"><div class="step-num">5</div><span>Pagar</span></div>
+    </div>
+
+    <div class="pago-layout">
+
+        <!-- ══ COLUMNA IZQUIERDA: formulario ══ -->
+        <div>
+            <!-- Panel activo de pago -->
+            <div class="card" id="panel-pago">
+                <h2 style="font-size:20px;margin-bottom:6px;">Agregar pago</h2>
+                <p style="color:#64748b;font-size:13px;margin-bottom:22px;">
+                    Puedes combinar varios métodos hasta completar el total de la reserva.
+                </p>
+
+                <!-- Tabs de métodos -->
+                <div class="metodos-tabs" id="tabs-metodos">
+                    <div class="mtab active" data-m="efectivo"      onclick="selMetodo(this)">💵 Efectivo</div>
+                    <div class="mtab"        data-m="yape"          onclick="selMetodo(this)">📱 Yape</div>
+                    <div class="mtab"        data-m="plin"          onclick="selMetodo(this)">📱 Plin</div>
+                    <div class="mtab"        data-m="tarjeta_credito" onclick="selMetodo(this)">💳 T. Crédito</div>
+                    <div class="mtab"        data-m="tarjeta_debito"  onclick="selMetodo(this)">💳 T. Débito</div>
+                </div>
+
+                <form id="form-pago">
+                    <!-- Monto -->
+                    <div class="form-group" style="margin-bottom:18px;">
+                        <label>Monto a registrar (S/) *</label>
+                        <input type="number" id="monto" step="0.01" min="0.01"
+                               placeholder="0.00" required style="font-size:18px;font-weight:700;">
+                    </div>
+
+                    <!-- EFECTIVO -->
+                    <div id="campos-efectivo" class="campos-metodo visible">
+                        <div class="form-group">
+                            <label>Monto entregado por el cliente (S/) *</label>
+                            <input type="number" id="monto_entregado" step="0.01" min="0.01"
+                                   placeholder="0.00">
+                        </div>
+                        <div id="vuelto-preview" style="display:none;margin-top:8px;padding:10px 14px;
+                             border-radius:8px;font-size:14px;font-weight:600;"></div>
+                    </div>
+
+                    <!-- YAPE -->
+                    <div id="campos-yape" class="campos-metodo">
+                        <div class="qr-box">
+                            <span style="font-size:40px;">📲</span>
+                            <span>QR Yape</span>
+                        </div>
+                        <div class="form-group">
+                            <label>Número de operación Yape *</label>
+                            <input type="text" id="num_op_yape" placeholder="Ej: 123456789">
+                        </div>
+                    </div>
+
+                    <!-- PLIN -->
+                    <div id="campos-plin" class="campos-metodo">
+                        <div class="qr-box">
+                            <span style="font-size:40px;">📲</span>
+                            <span>QR Plin</span>
+                        </div>
+                        <div class="form-group">
+                            <label>Número de operación Plin *</label>
+                            <input type="text" id="num_op_plin" placeholder="Ej: 987654321">
+                        </div>
+                    </div>
+
+                    <!-- TARJETA CRÉDITO -->
+                    <div id="campos-tarjeta_credito" class="campos-metodo">
+                        <div class="form-grid" style="gap:14px;">
+                            <div class="form-group" style="grid-column:1/-1;">
+                                <label>Titular de la tarjeta *</label>
+                                <input type="text" id="titular_c" placeholder="Como aparece en la tarjeta">
+                            </div>
+                            <div class="form-group" style="grid-column:1/-1;">
+                                <label>Número de tarjeta *</label>
+                                <input type="text" id="num_c" maxlength="19"
+                                       placeholder="4111 1111 1111 1111" autocomplete="cc-number">
+                            </div>
+                            <div class="form-group">
+                                <label>Vencimiento *</label>
+                                <input type="text" id="venc_c" maxlength="5"
+                                       placeholder="MM/AA" autocomplete="cc-exp">
+                            </div>
+                            <div class="form-group">
+                                <label>CVV *</label>
+                                <input type="password" id="cvv_c" maxlength="4"
+                                       placeholder="123" autocomplete="cc-csc">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TARJETA DÉBITO -->
+                    <div id="campos-tarjeta_debito" class="campos-metodo">
+                        <div class="form-grid" style="gap:14px;">
+                            <div class="form-group" style="grid-column:1/-1;">
+                                <label>Titular de la tarjeta *</label>
+                                <input type="text" id="titular_d" placeholder="Como aparece en la tarjeta">
+                            </div>
+                            <div class="form-group" style="grid-column:1/-1;">
+                                <label>Número de tarjeta *</label>
+                                <input type="text" id="num_d" maxlength="19"
+                                       placeholder="4111 1111 1111 1111" autocomplete="cc-number">
+                            </div>
+                            <div class="form-group">
+                                <label>Vencimiento *</label>
+                                <input type="text" id="venc_d" maxlength="5"
+                                       placeholder="MM/AA" autocomplete="cc-exp">
+                            </div>
+                            <div class="form-group">
+                                <label>CVV *</label>
+                                <input type="password" id="cvv_d" maxlength="4"
+                                       placeholder="123" autocomplete="cc-csc">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="error-pago" class="alert alert-error"
+                         style="display:none;margin:14px 0;"></div>
+
+                    <div style="display:flex;justify-content:space-between;gap:12px;
+                                padding-top:16px;border-top:1px solid #e2e8f0;margin-top:16px;">
+                        <a href="confirmar.html" class="btn btn-secondary">← Volver</a>
+                        <button type="submit" class="btn btn-primary" id="btn-agregar">
+                            Agregar pago
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Panel confirmado (se muestra cuando saldo = 0) -->
+            <div id="panel-confirmado" style="display:none;">
+                <div class="confirmado">
+                    <div style="font-size:52px;margin-bottom:12px;">✅</div>
+                    <h2>¡Pago completado!</h2>
+                    <p>La reserva ha sido confirmada exitosamente.</p>
+                    <div class="confirmado-btns">
+                        <a id="link-pdf" href="#" target="_blank" class="btn btn-secondary">
+                            Descargar comprobante PDF
+                        </a>
+                        <a href="exitosa.html" class="btn btn-primary"
+                           style="background:#fff;color:#14532d;">
+                            Ver resumen
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══ COLUMNA DERECHA: resumen ══ -->
+        <div>
+            <!-- Info de la reserva -->
+            <div class="card" style="margin-bottom:16px;">
+                <h3 style="font-size:13px;color:#64748b;font-weight:700;
+                           letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">
+                    Tu reserva
+                </h3>
+                <div class="resumen-grid">
+                    <div class="resumen-item">
+                        <span>Código</span>
+                        <strong id="r-codigo" style="color:#0f4c81;font-size:15px;">—</strong>
+                    </div>
+                    <div class="resumen-item">
+                        <span>Habitación</span>
+                        <strong id="r-hab">—</strong>
+                    </div>
+                    <div class="resumen-item">
+                        <span>Check-in</span>
+                        <strong id="r-checkin">—</strong>
+                    </div>
+                    <div class="resumen-item">
+                        <span>Check-out</span>
+                        <strong id="r-checkout">—</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estado de pago -->
+            <div class="resumen-pago">
+                <div class="res-row">
+                    <label>Total reserva</label>
+                    <span id="res-total">S/ 0.00</span>
+                </div>
+                <div class="res-row">
+                    <label>Total pagado</label>
+                    <span id="res-pagado" style="color:#86efac;">S/ 0.00</span>
+                </div>
+                <div class="res-row pendiente">
+                    <label>Saldo pendiente</label>
+                    <span id="res-pendiente">S/ 0.00</span>
+                </div>
+            </div>
+
+            <!-- Pagos registrados -->
+            <div class="card">
+                <h3 style="font-size:13px;color:#64748b;font-weight:700;
+                           letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">
+                    Pagos registrados
+                </h3>
+                <div id="lista-pagos">
+                    <p style="color:#94a3b8;font-size:13px;">Sin pagos aún.</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="js/config.js"></script>
+<script>
+    // ── Estado global ──
+    const resultado  = JSON.parse(localStorage.getItem("reserva_resultado") || "null");
+    const hab        = JSON.parse(localStorage.getItem("reserva_hab")       || "null");
+    const cliente    = JSON.parse(localStorage.getItem("reserva_cliente")   || "{}");
+
+    if (!resultado || !hab) { window.location.href = "index.html"; }
+
+    const codigoReserva = resultado.codigo_reserva;
+    const precioTotal   = parseFloat(resultado.precio_total);
+    let metodoActual    = "efectivo";
+    let pagosReg        = [];
+    let totalPagado     = 0;
+    let saldo           = precioTotal;
+
+    // ── Llenar info reserva ──
+    document.getElementById("r-codigo").textContent   = codigoReserva;
+    document.getElementById("r-hab").textContent      = `${hab.tipo} — Nro. ${hab.numero}`;
+    document.getElementById("r-checkin").textContent  = hab.checkin;
+    document.getElementById("r-checkout").textContent = hab.checkout;
+    document.getElementById("monto").value            = precioTotal.toFixed(2);
+
+    // ── Actualizar panel derecho ──
+    function actualizarResumen() {
+        document.getElementById("res-total").textContent    = `S/ ${precioTotal.toFixed(2)}`;
+        document.getElementById("res-pagado").textContent   = `S/ ${totalPagado.toFixed(2)}`;
+        document.getElementById("res-pendiente").textContent = `S/ ${Math.max(saldo,0).toFixed(2)}`;
+
+        const lista = document.getElementById("lista-pagos");
+        if (pagosReg.length === 0) {
+            lista.innerHTML = '<p style="color:#94a3b8;font-size:13px;">Sin pagos aún.</p>';
+        } else {
+            lista.innerHTML = pagosReg.map(p => {
+                const meta = p.numero_operacion
+                    ? `N° Op: ${p.numero_operacion}`
+                    : p.vuelto > 0 ? `Vuelto: S/ ${p.vuelto.toFixed(2)}` : "";
+                return `
+                    <div class="pago-item">
+                        <div>
+                            <div class="pi-metodo">${fmtMetodo(p.metodo_pago)}</div>
+                            ${meta ? `<div class="pi-meta">${meta}</div>` : ""}
+                        </div>
+                        <div class="pi-monto">S/ ${parseFloat(p.monto).toFixed(2)}</div>
+                    </div>`;
+            }).join("");
+        }
+
+        const btn = document.getElementById("btn-agregar");
+        if (btn) {
+            btn.textContent = saldo > 0.001
+                ? `Agregar S/ ${Math.min(saldo, precioTotal).toFixed(2)}`
+                : "Pago completo";
+            btn.disabled = saldo <= 0.001;
+        }
+
+        // Pre-llenar monto con saldo restante
+        const montoInput = document.getElementById("monto");
+        if (montoInput && saldo > 0) {
+            montoInput.value = Math.max(saldo, 0).toFixed(2);
+        }
+    }
+
+    function fmtMetodo(m) {
+        return {
+            efectivo:       "💵 Efectivo",
+            yape:           "📱 Yape",
+            plin:           "📱 Plin",
+            tarjeta_credito:"💳 T. Crédito",
+            tarjeta_debito: "💳 T. Débito",
+        }[m] || m;
+    }
+
+    // ── Seleccionar método ──
+    function selMetodo(tab) {
+        document.querySelectorAll(".mtab").forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+        metodoActual = tab.dataset.m;
+        document.querySelectorAll(".campos-metodo").forEach(c => c.classList.remove("visible"));
+        document.getElementById(`campos-${metodoActual}`).classList.add("visible");
+        actualizarResumen();
+    }
+
+    // ── Cálculo de vuelto en tiempo real ──
+    document.getElementById("monto_entregado").addEventListener("input", calcVuelto);
+    document.getElementById("monto").addEventListener("input", calcVuelto);
+    function calcVuelto() {
+        if (metodoActual !== "efectivo") return;
+        const m = parseFloat(document.getElementById("monto").value) || 0;
+        const e = parseFloat(document.getElementById("monto_entregado").value) || 0;
+        const el = document.getElementById("vuelto-preview");
+        if (e > 0) {
+            const v = e - m;
+            el.style.display = "block";
+            if (v >= 0) {
+                el.textContent = `Vuelto: S/ ${v.toFixed(2)}`;
+                el.style.background = "#f0fdf4"; el.style.color = "#166534";
+                el.style.border = "1px solid #bbf7d0";
+            } else {
+                el.textContent = `Monto insuficiente (faltan S/ ${Math.abs(v).toFixed(2)})`;
+                el.style.background = "#fee2e2"; el.style.color = "#991b1b";
+                el.style.border = "1px solid #fca5a5";
+            }
+        } else {
+            el.style.display = "none";
+        }
+    }
+
+    // ── Formateo de número de tarjeta ──
+    function fmtTarjeta(id) {
+        document.getElementById(id).addEventListener("input", function() {
+            const v = this.value.replace(/\D/g,"").slice(0,16);
+            this.value = v.replace(/(\d{4})(?=\d)/g,"$1 ");
+        });
+    }
+    fmtTarjeta("num_c");
+    fmtTarjeta("num_d");
+
+    // ── Enviar pago ──
+    document.getElementById("form-pago").addEventListener("submit", async function(e) {
+        e.preventDefault();
+        const btn   = document.getElementById("btn-agregar");
+        const errEl = document.getElementById("error-pago");
+        errEl.style.display = "none";
+
+        const monto = parseFloat(document.getElementById("monto").value) || 0;
+
+        if (monto <= 0) {
+            errEl.textContent = "El monto debe ser mayor a cero.";
+            errEl.style.display = "block"; return;
+        }
+        if (monto > saldo + 0.01) {
+            errEl.textContent = `El monto S/ ${monto.toFixed(2)} supera el saldo pendiente S/ ${saldo.toFixed(2)}.`;
+            errEl.style.display = "block"; return;
+        }
+
+        const payload = { metodo_pago: metodoActual, monto };
+
+        if (metodoActual === "efectivo") {
+            const entregado = parseFloat(document.getElementById("monto_entregado").value) || 0;
+            if (entregado < monto) {
+                errEl.textContent = "El monto entregado debe ser mayor o igual al monto del pago.";
+                errEl.style.display = "block"; return;
+            }
+            payload.monto_entregado = entregado;
+
+        } else if (metodoActual === "yape") {
+            payload.numero_operacion = document.getElementById("num_op_yape").value.trim();
+            if (payload.numero_operacion.length < 4) {
+                errEl.textContent = "Ingresa el número de operación Yape (mín. 4 caracteres).";
+                errEl.style.display = "block"; return;
+            }
+
+        } else if (metodoActual === "plin") {
+            payload.numero_operacion = document.getElementById("num_op_plin").value.trim();
+            if (payload.numero_operacion.length < 4) {
+                errEl.textContent = "Ingresa el número de operación Plin (mín. 4 caracteres).";
+                errEl.style.display = "block"; return;
+            }
+
+        } else if (metodoActual === "tarjeta_credito") {
+            payload.titular          = document.getElementById("titular_c").value.trim();
+            payload.numero_tarjeta   = document.getElementById("num_c").value.replace(/\s/g,"");
+            payload.vencimiento      = document.getElementById("venc_c").value.trim();
+            payload.codigo_seguridad = document.getElementById("cvv_c").value.trim();
+
+        } else if (metodoActual === "tarjeta_debito") {
+            payload.titular          = document.getElementById("titular_d").value.trim();
+            payload.numero_tarjeta   = document.getElementById("num_d").value.replace(/\s/g,"");
+            payload.vencimiento      = document.getElementById("venc_d").value.trim();
+            payload.codigo_seguridad = document.getElementById("cvv_d").value.trim();
+        }
+
+        btn.disabled = true;
+        btn.textContent = "Procesando…";
+
+        try {
+            const resp = await fetch(`${API_BASE}/api/reservas/${codigoReserva}/pagos`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            });
+            const data = await resp.json();
+
+            if (!resp.ok) {
+                errEl.textContent = data.error || "No se pudo procesar el pago.";
+                errEl.style.display = "block";
+                btn.disabled = false;
+                btn.textContent = "Agregar pago";
+                return;
+            }
+
+            // Actualizar estado local
+            pagosReg.push(data.pago);
+            totalPagado = data.resumen.total_pagado;
+            saldo       = data.resumen.saldo_pendiente;
+            actualizarResumen();
+
+            // Limpiar campos
+            document.getElementById("monto_entregado").value = "";
+            document.getElementById("num_op_yape").value     = "";
+            document.getElementById("num_op_plin").value     = "";
+            document.getElementById("vuelto-preview").style.display = "none";
+
+            if (data.resumen.reserva_confirmada) {
+                // Guardar para exitosa.html
+                localStorage.setItem("pago_resultado", JSON.stringify({
+                    comprobante: {
+                        codigo_reserva:   codigoReserva,
+                        codigo_operacion: data.pago.codigo_operacion,
+                        precio_total:     precioTotal,
+                        total_pagado:     totalPagado,
+                        pagos:            pagosReg,
+                        estado_pago:      "exitoso",
+                        estado_reserva:   "confirmada",
+                        cliente: `${cliente.nombre || ""} ${cliente.apellido || ""}`.trim(),
+                        correo:  cliente.correo  || "",
+                        habitacion: `${hab.tipo} — Nro. ${hab.numero}`,
+                        checkin:    hab.checkin,
+                        checkout:   hab.checkout,
+                        fecha_pago: data.pago.fecha_pago,
+                        metodo_pago: metodoActual,
+                    },
+                    correo_enviado:    data.correo_enviado,
+                    comprobante_pdf_url: data.comprobante_pdf_url,
+                }));
+
+                document.getElementById("panel-pago").style.display = "none";
+                document.getElementById("panel-confirmado").style.display = "block";
+                if (data.comprobante_pdf_url) {
+                    document.getElementById("link-pdf").href =
+                        `${API_BASE}${data.comprobante_pdf_url}`;
+                }
+            } else {
+                btn.disabled = false;
+                btn.textContent = `Agregar S/ ${saldo.toFixed(2)}`;
+            }
+
+        } catch {
+            errEl.textContent = "No se pudo conectar con el servidor.";
+            errEl.style.display = "block";
+            btn.disabled = false;
+            btn.textContent = "Agregar pago";
+        }
+    });
+
+    // Inicializar
+    actualizarResumen();
+</script>
+
+</body>
+</html>

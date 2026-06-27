@@ -33,17 +33,34 @@ def enviar_confirmacion_reserva(destinatario: str, comprobante: dict) -> None:
     mensaje["Subject"] = f"Confirmacion de reserva {comprobante['codigo_reserva']}"
     mensaje["From"] = os.getenv("SMTP_FROM")
     mensaje["To"] = destinatario
+    pagos = comprobante.get("pagos") or []
+    detalle_pagos = []
+    if pagos:
+        for i, p in enumerate(pagos, 1):
+            detalle_pagos.append(
+                f"  Pago {i}: {p.get('metodo_pago','')} - S/ {float(p.get('monto',0)):.2f}"
+            )
+            if p.get("numero_operacion"):
+                detalle_pagos.append(f"           N° Op: {p['numero_operacion']}")
+    else:
+        detalle_pagos.append(f"  Metodo: {comprobante.get('metodo_pago','')}")
+        detalle_pagos.append(f"  Monto:  S/ {float(comprobante.get('monto_pagado',0)):.2f}")
+
+    precio_total = float(comprobante.get("precio_total") or comprobante.get("monto_pagado") or 0)
+
     mensaje.set_content(
         "\n".join([
             "Hotel Costa Azul",
             "",
             "Tu reserva fue confirmada correctamente.",
             f"Codigo de reserva: {comprobante['codigo_reserva']}",
-            f"Operacion de pago: {comprobante['codigo_operacion']}",
             f"Habitacion: {comprobante['habitacion']}",
             f"Fechas: {comprobante['checkin']} al {comprobante['checkout']}",
-            f"Monto pagado: S/ {comprobante['monto_pagado']:.2f}",
-            f"Metodo de pago: {comprobante['metodo_pago']}",
+            "",
+            "DETALLE DE PAGOS:",
+            *detalle_pagos,
+            "",
+            f"TOTAL PAGADO: S/ {precio_total:.2f}",
             "",
             "Conserva este correo para el check-in.",
         ])

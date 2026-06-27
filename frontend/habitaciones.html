@@ -3,8 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Habitaciones disponibles - Hotel Costa Azul</title>
+    <title>Habitaciones disponibles — Hotel Costa Azul</title>
     <link rel="stylesheet" href="css/estilos.css">
+    <style>
+        .hab-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 24px; }
+        .hab-card  { background: #fff; border-radius: 16px; overflow: hidden;
+                     box-shadow: 0 4px 20px rgba(15,76,129,.10); display: flex; flex-direction: column; }
+        .hab-card-img { height: 200px; background: #e8f0fe; display: flex;
+                        align-items: center; justify-content: center; font-size: 60px; position: relative; }
+        .hab-card-img img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+        .hab-badge { position: absolute; top: 12px; right: 12px; background: rgba(15,76,129,.85);
+                     color: #fff; font-size: 11px; font-weight: 700; padding: 4px 10px;
+                     border-radius: 20px; letter-spacing: .5px; }
+        .hab-card-body { padding: 18px 20px; flex: 1; }
+        .hab-card-body h3 { font-size: 17px; font-weight: 700; color: #0f4c81; margin-bottom: 6px; }
+        .hab-card-body .descripcion { font-size: 13px; color: #64748b; line-height: 1.55; margin-bottom: 12px; }
+        .hab-meta { display: flex; gap: 16px; margin-bottom: 12px; flex-wrap: wrap; }
+        .hab-meta-item { font-size: 12px; color: #475569; font-weight: 600;
+                         background: #f1f5f9; padding: 4px 10px; border-radius: 20px; }
+        .servicios-lista { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+        .servicio-tag { font-size: 11px; color: #0f4c81; background: #e8f0fe;
+                        padding: 3px 8px; border-radius: 12px; font-weight: 600; }
+        .hab-card-footer { display: flex; justify-content: space-between; align-items: center;
+                           padding: 14px 20px; border-top: 1px solid #f1f5f9; background: #fafbff; }
+        .precio { font-size: 20px; font-weight: 800; color: #0f4c81; }
+        .precio span { font-size: 12px; font-weight: 500; color: #94a3b8; }
+        .btn-sel { background: #0f4c81; color: #fff; border: none; padding: 10px 22px;
+                   border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer;
+                   transition: background .2s; }
+        .btn-sel:hover { background: #0b3a60; }
+        .filtros-bar { background: #fff; border-radius: 14px; box-shadow: 0 2px 12px rgba(15,76,129,.08);
+                       padding: 20px 24px; margin-bottom: 28px; }
+        .filtros-bar form { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end; }
+        .filtros-bar .form-group { margin: 0; min-width: 140px; flex: 1; }
+        .filtros-bar button { white-space: nowrap; }
+        @media(max-width: 600px) { .hab-grid { grid-template-columns: 1fr; } }
+    </style>
 </head>
 <body>
 
@@ -12,55 +46,42 @@
     <a class="brand" href="index.html">🌊 Hotel Costa Azul</a>
     <nav>
         <a href="index.html">Inicio</a>
-        <a href="catalogo.html">Catálogo</a>
         <a href="personal.html">Acceso Personal</a>
     </nav>
 </nav>
 
-<div style="max-width:1100px;margin:0 auto;padding:36px 24px;">
+<div style="max-width:1200px;margin:0 auto;padding:36px 24px;">
 
-    <!-- Filtros activos y modificar búsqueda -->
-    <div class="card" style="margin-bottom:24px;">
+    <div class="filtros-bar">
         <form id="form-refinar">
-            <div class="buscador-grid">
-                <div class="form-group">
-                    <label>Check-in</label>
-                    <input type="date" id="checkin" required>
-                </div>
-                <div class="form-group">
-                    <label>Check-out</label>
-                    <input type="date" id="checkout" required>
-                </div>
-                <div class="form-group">
-                    <label>Tipo de habitación</label>
-                    <select id="tipo">
-                        <option value="">Todos los tipos</option>
-                        <option value="Simple">Simple</option>
-                        <option value="Doble">Doble</option>
-                        <option value="Suite">Suite</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Personas</label>
-                    <input type="number" id="personas" min="1" value="1" required>
-                </div>
-                <div class="form-group">
-                    <label>Precio mín. (S/)</label>
-                    <input type="number" id="precio_min" placeholder="Sin mínimo" min="0">
-                </div>
-                <div class="form-group">
-                    <label>Precio máx. (S/)</label>
-                    <input type="number" id="precio_max" placeholder="Sin máximo" min="0">
-                </div>
-                <div>
-                    <button type="submit" class="btn btn-primary" style="width:100%">Actualizar</button>
-                </div>
+            <div class="form-group">
+                <label>Check-in</label>
+                <input type="date" id="checkin" required>
+            </div>
+            <div class="form-group">
+                <label>Check-out</label>
+                <input type="date" id="checkout" required>
+            </div>
+            <div class="form-group">
+                <label>Tipo de habitación</label>
+                <select id="tipo">
+                    <option value="">Todos los tipos</option>
+                    <option value="Simple">Simple</option>
+                    <option value="Doble">Doble</option>
+                    <option value="Suite">Suite</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Personas</label>
+                <input type="number" id="personas" min="1" value="1" required>
+            </div>
+            <div>
+                <button type="submit" class="btn btn-primary">Actualizar búsqueda</button>
             </div>
         </form>
     </div>
 
-    <div id="info-busqueda" style="margin-bottom:16px;color:#64748b;font-size:14px;"></div>
-
+    <div id="info-busqueda" style="margin-bottom:16px;color:#64748b;font-size:14px;font-weight:500;"></div>
     <div id="contenedor-resultado"></div>
 
 </div>
@@ -68,41 +89,30 @@
 <script src="js/config.js"></script>
 <script src="js/habitaciones.js"></script>
 <script>
-    // Pre-cargar parámetros de URL en los inputs
     const params   = new URLSearchParams(window.location.search);
-    const checkin  = params.get("checkin")    || "";
-    const checkout = params.get("checkout")   || "";
-    const tipo     = params.get("tipo")       || "";
-    const personas = params.get("personas")   || "1";
-    const precioMin = params.get("precio_min") || "";
-    const precioMax = params.get("precio_max") || "";
+    const checkin  = params.get("checkin")  || "";
+    const checkout = params.get("checkout") || "";
+    const tipo     = params.get("tipo")     || "";
+    const personas = params.get("personas") || "1";
 
-    document.getElementById("checkin").value    = checkin;
-    document.getElementById("checkout").value   = checkout;
-    document.getElementById("tipo").value       = tipo;
-    document.getElementById("personas").value   = personas;
-    document.getElementById("precio_min").value = precioMin;
-    document.getElementById("precio_max").value = precioMax;
+    document.getElementById("checkin").value  = checkin;
+    document.getElementById("checkout").value = checkout;
+    document.getElementById("tipo").value     = tipo;
+    document.getElementById("personas").value = personas;
 
-    // Refinar búsqueda
     document.getElementById("form-refinar").addEventListener("submit", function(e) {
         e.preventDefault();
-        const nuevosParams = new URLSearchParams({
+        const p = new URLSearchParams({
             checkin:  document.getElementById("checkin").value,
             checkout: document.getElementById("checkout").value,
             personas: document.getElementById("personas").value,
         });
-        const t  = document.getElementById("tipo").value;
-        const pn = document.getElementById("precio_min").value;
-        const px = document.getElementById("precio_max").value;
-        if (t)  nuevosParams.append("tipo", t);
-        if (pn) nuevosParams.append("precio_min", pn);
-        if (px) nuevosParams.append("precio_max", px);
-        window.location.href = `habitaciones.html?${nuevosParams.toString()}`;
+        const t = document.getElementById("tipo").value;
+        if (t) p.append("tipo", t);
+        window.location.href = `habitaciones.html?${p.toString()}`;
     });
 
-    // Cargar habitaciones disponibles
-    buscarHabitaciones(checkin, checkout, tipo, precioMin, precioMax, personas);
+    buscarHabitaciones(checkin, checkout, tipo, personas);
 </script>
 
 </body>
