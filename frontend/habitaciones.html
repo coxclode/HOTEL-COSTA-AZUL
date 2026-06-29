@@ -3,66 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Habitaciones disponibles — Hotel Costa Azul</title>
-    <link rel="stylesheet" href="css/estilos.css">
-    <style>
-        .hab-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 24px; }
-        .hab-card  { background: #fff; border-radius: 16px; overflow: hidden;
-                     box-shadow: 0 4px 20px rgba(15,76,129,.10); display: flex; flex-direction: column; }
-        .hab-card-img { height: 200px; background: #e8f0fe; display: flex;
-                        align-items: center; justify-content: center; font-size: 60px; position: relative; }
-        .hab-card-img img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
-        .hab-badge { position: absolute; top: 12px; right: 12px; background: rgba(15,76,129,.85);
-                     color: #fff; font-size: 11px; font-weight: 700; padding: 4px 10px;
-                     border-radius: 20px; letter-spacing: .5px; }
-        .hab-card-body { padding: 18px 20px; flex: 1; }
-        .hab-card-body h3 { font-size: 17px; font-weight: 700; color: #0f4c81; margin-bottom: 6px; }
-        .hab-card-body .descripcion { font-size: 13px; color: #64748b; line-height: 1.55; margin-bottom: 12px; }
-        .hab-meta { display: flex; gap: 16px; margin-bottom: 12px; flex-wrap: wrap; }
-        .hab-meta-item { font-size: 12px; color: #475569; font-weight: 600;
-                         background: #f1f5f9; padding: 4px 10px; border-radius: 20px; }
-        .servicios-lista { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
-        .servicio-tag { font-size: 11px; color: #0f4c81; background: #e8f0fe;
-                        padding: 3px 8px; border-radius: 12px; font-weight: 600; }
-        .hab-card-footer { display: flex; justify-content: space-between; align-items: center;
-                           padding: 14px 20px; border-top: 1px solid #f1f5f9; background: #fafbff; }
-        .precio { font-size: 20px; font-weight: 800; color: #0f4c81; }
-        .precio span { font-size: 12px; font-weight: 500; color: #94a3b8; }
-        .btn-sel { background: #0f4c81; color: #fff; border: none; padding: 10px 22px;
-                   border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer;
-                   transition: background .2s; }
-        .btn-sel:hover { background: #0b3a60; }
-        .filtros-bar { background: #fff; border-radius: 14px; box-shadow: 0 2px 12px rgba(15,76,129,.08);
-                       padding: 20px 24px; margin-bottom: 28px; }
-        .filtros-bar form { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end; }
-        .filtros-bar .form-group { margin: 0; min-width: 140px; flex: 1; }
-        .filtros-bar button { white-space: nowrap; }
-        @media(max-width: 600px) { .hab-grid { grid-template-columns: 1fr; } }
-    </style>
+    <title>Habitaciones Disponibles — Hotel Costa Azul</title>
+    <link rel="stylesheet" href="css/premium.css">
 </head>
 <body>
 
-<nav class="navbar">
-    <a class="brand" href="index.html">🌊 Hotel Costa Azul</a>
-    <nav>
+<!-- ── NAVBAR ── -->
+<header class="pnav">
+    <a class="pnav-brand" href="index.html">Hotel Costa Azul</a>
+    <nav class="pnav-links">
         <a href="index.html">Inicio</a>
-        <a href="personal.html">Acceso Personal</a>
+        <a href="catalogo.html">Habitaciones</a>
+        <a href="personal.html">Personal</a>
     </nav>
-</nav>
+    <div class="pnav-actions">
+        <a href="catalogo.html" class="pbtn pbtn-outline">Ver catálogo</a>
+    </div>
+</header>
 
-<div style="max-width:1200px;margin:0 auto;padding:36px 24px;">
+<!-- ── PAGE HEADER ── -->
+<div style="background:var(--navy);padding:28px 40px;color:#fff;">
+    <span style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.45);display:block;margin-bottom:4px;">Disponibilidad</span>
+    <h1 style="font-size:26px;font-weight:900;">Habitaciones Disponibles</h1>
+</div>
 
-    <div class="filtros-bar">
-        <form id="form-refinar">
-            <div class="form-group">
-                <label>Check-in</label>
+<div class="pcontainer">
+
+    <!-- Filter bar -->
+    <div class="filter-bar">
+        <form class="filter-form" id="form-refinar">
+            <div class="filter-field">
+                <label>Check-In</label>
                 <input type="date" id="checkin" required>
             </div>
-            <div class="form-group">
-                <label>Check-out</label>
+            <div class="filter-field">
+                <label>Check-Out</label>
                 <input type="date" id="checkout" required>
             </div>
-            <div class="form-group">
+            <div class="filter-field">
                 <label>Tipo de habitación</label>
                 <select id="tipo">
                     <option value="">Todos los tipos</option>
@@ -71,49 +49,59 @@
                     <option value="Suite">Suite</option>
                 </select>
             </div>
-            <div class="form-group">
+            <div class="filter-field">
                 <label>Personas</label>
-                <input type="number" id="personas" min="1" value="1" required>
+                <input type="number" id="personas" min="1" value="1">
             </div>
-            <div>
-                <button type="submit" class="btn btn-primary">Actualizar búsqueda</button>
-            </div>
+            <button type="submit" class="pbtn pbtn-dark" style="align-self:flex-end;">Actualizar búsqueda</button>
         </form>
     </div>
 
-    <div id="info-busqueda" style="margin-bottom:16px;color:#64748b;font-size:14px;font-weight:500;"></div>
+    <p id="info-busqueda" style="font-size:13px;color:var(--muted);font-weight:600;margin-bottom:16px;"></p>
     <div id="contenedor-resultado"></div>
 
 </div>
+
+<!-- ── FOOTER ── -->
+<footer class="pfooter">
+    <div class="pfooter-inner">
+        <div class="pfooter-brand"><h2>Hotel Costa Azul</h2><p>Trujillo, Perú</p></div>
+        <nav class="pfooter-links">
+            <a href="index.html">Inicio</a>
+            <a href="catalogo.html">Catálogo</a>
+            <a href="personal.html">Acceso Personal</a>
+        </nav>
+        <span class="pfooter-copy">© 2026 Hotel Costa Azul</span>
+    </div>
+</footer>
 
 <script src="js/config.js"></script>
 <script src="js/habitaciones.js"></script>
 <script>
     const params   = new URLSearchParams(window.location.search);
-    const checkin  = params.get("checkin")  || "";
-    const checkout = params.get("checkout") || "";
-    const tipo     = params.get("tipo")     || "";
-    const personas = params.get("personas") || "1";
+    const checkin  = params.get('checkin')  || '';
+    const checkout = params.get('checkout') || '';
+    const tipo     = params.get('tipo')     || '';
+    const personas = params.get('personas') || '1';
 
-    document.getElementById("checkin").value  = checkin;
-    document.getElementById("checkout").value = checkout;
-    document.getElementById("tipo").value     = tipo;
-    document.getElementById("personas").value = personas;
+    document.getElementById('checkin').value  = checkin;
+    document.getElementById('checkout').value = checkout;
+    document.getElementById('tipo').value     = tipo;
+    document.getElementById('personas').value = personas;
 
-    document.getElementById("form-refinar").addEventListener("submit", function(e) {
+    document.getElementById('form-refinar').addEventListener('submit', function(e) {
         e.preventDefault();
         const p = new URLSearchParams({
-            checkin:  document.getElementById("checkin").value,
-            checkout: document.getElementById("checkout").value,
-            personas: document.getElementById("personas").value,
+            checkin:  document.getElementById('checkin').value,
+            checkout: document.getElementById('checkout').value,
+            personas: document.getElementById('personas').value,
         });
-        const t = document.getElementById("tipo").value;
-        if (t) p.append("tipo", t);
+        const t = document.getElementById('tipo').value;
+        if (t) p.append('tipo', t);
         window.location.href = `habitaciones.html?${p.toString()}`;
     });
 
     buscarHabitaciones(checkin, checkout, tipo, personas);
 </script>
-
 </body>
 </html>

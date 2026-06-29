@@ -4,289 +4,281 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hotel Costa Azul — Trujillo, Perú</title>
-    <link rel="stylesheet" href="css/landing.css">
-</head>
-<body class="landing-body">
+    <link rel="stylesheet" href="css/premium.css">
+    <style>
+        .phero-search-wrap { width: 100%; display: flex; flex-direction: column; align-items: center; }
+        #error-fechas { color: #fca5a5; font-size: 13px; margin-top: 10px; display: none; }
 
-<!-- ══ NAVBAR ══ -->
-<header class="navbar-lux" id="navbar">
-    <a class="nav-brand" href="index.html">
-        <span class="nav-brand-name">Hotel Costa Azul</span>
-        <span class="nav-brand-sub">Trujillo · Perú</span>
-    </a>
-    <nav class="nav-links">
-        <a href="#habitaciones">Habitaciones</a>
+        /* Services section */
+        .psection { padding: 72px 28px; }
+        .psection-header { text-align: center; max-width: 560px; margin: 0 auto 44px; }
+        .servicios-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
+        @media(max-width:800px) { .servicios-grid { grid-template-columns: 1fr; } }
+        .srv-card { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); padding: 28px 24px; }
+        .srv-icon { font-size: 36px; margin-bottom: 12px; }
+        .srv-card h3 { font-size: 16px; font-weight: 800; color: var(--navy); margin-bottom: 8px; }
+        .srv-card p { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 12px; }
+        .srv-bullets { list-style: none; font-size: 12px; color: var(--muted); }
+        .srv-bullets li::before { content: '✓ '; color: var(--success); font-weight: 700; }
+        .srv-bullets li { margin-bottom: 4px; }
+
+        /* Contact section */
+        .contact-section { background: var(--navy); padding: 72px 28px; }
+        .contact-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+        @media(max-width:800px) { .contact-inner { grid-template-columns: 1fr; } }
+        .contact-text h2 { font-size: 28px; font-weight: 900; color: #fff; margin-bottom: 10px; }
+        .contact-text p { font-size: 14px; color: rgba(255,255,255,.7); line-height: 1.7; margin-bottom: 20px; }
+        .contact-details { display: flex; flex-direction: column; gap: 12px; }
+        .cdet { display: flex; gap: 12px; align-items: flex-start; }
+        .cdet-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+        .cdet-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,.4); }
+        .cdet-val { font-size: 14px; font-weight: 600; color: rgba(255,255,255,.9); }
+        .contact-cta { background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.15); border-radius: 16px; padding: 32px; }
+        .contact-cta h3 { font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 8px; }
+        .contact-cta p { font-size: 13px; color: rgba(255,255,255,.65); line-height: 1.6; margin-bottom: 20px; }
+
+        /* Rooms preview strip */
+        .rooms-section { padding: 72px 28px; background: var(--bg); }
+        .rooms-inner { max-width: 1100px; margin: 0 auto; }
+        .rooms-header-row { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 32px; flex-wrap: wrap; gap: 12px; }
+    </style>
+</head>
+<body>
+
+<!-- ── NAVBAR ── -->
+<header class="pnav">
+    <a class="pnav-brand" href="index.html">Hotel Costa Azul</a>
+    <nav class="pnav-links">
+        <a href="#habitaciones" class="active">Habitaciones</a>
         <a href="#servicios">Servicios</a>
         <a href="#contacto">Contacto</a>
         <a href="personal.html">Personal</a>
     </nav>
-    <a href="habitaciones.html" class="btn-reservar-nav">Reservar Ahora</a>
+    <div class="pnav-actions">
+        <a href="catalogo.html" class="pbtn pbtn-outline">Ver catálogo</a>
+        <a href="habitaciones.html" class="pbtn pbtn-dark">Reservar Ahora</a>
+    </div>
 </header>
 
-<!-- ══ HERO: solo consulta de disponibilidad ══ -->
-<section class="hero-lux hero-compact" id="buscador">
-    <div class="hero-bg"></div>
-    <div class="hero-search-wrap">
-        <span class="hero-tagline">Consulta Disponibilidad</span>
-        <p class="hero-search-sub">Elige tus fechas y encuentra habitaciones libres al instante</p>
-        <form class="booking-bar booking-bar-hero" id="form-busqueda">
-            <div class="booking-field">
+<!-- ── HERO ── -->
+<section class="phero">
+    <div class="phero-content phero-search-wrap">
+        <span class="phero-tagline">Trujillo, Perú · Desde 1998</span>
+        <h1 class="phero-title">Donde la Tradición<br>se une con el Lujo</h1>
+        <p class="phero-sub">Reserva tu estadía ideal en el centro de Trujillo. Habitaciones premium con atención personalizada las 24 horas.</p>
+
+        <form class="phero-search" id="form-busqueda">
+            <div class="hsearch-field">
                 <label>Check-In</label>
                 <input type="date" id="checkin" name="checkin" required>
             </div>
-            <div class="booking-field">
+            <div class="hsearch-field">
                 <label>Check-Out</label>
                 <input type="date" id="checkout" name="checkout" required>
             </div>
-            <div class="booking-field">
-                <label>Tipo de Habitación</label>
+            <div class="hsearch-field">
+                <label>Tipo</label>
                 <select id="tipo" name="tipo">
-                    <option value="">Todos los tipos</option>
+                    <option value="">Todos</option>
                     <option value="Simple">Simple</option>
                     <option value="Doble">Doble</option>
                     <option value="Suite">Suite</option>
                 </select>
             </div>
-            <div class="booking-field">
+            <div class="hsearch-field" style="border-right:none">
                 <label>Huéspedes</label>
-                <input type="number" id="personas" name="personas" min="1" value="1" required>
+                <input type="number" id="personas" name="personas" min="1" value="1">
             </div>
-            <button type="submit" class="btn-buscar-bar">
-                Buscar
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-left:6px;vertical-align:middle">
-                    <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-                </svg>
-            </button>
-            <p id="error-fechas-bar"></p>
+            <button type="submit" class="hsearch-btn">Buscar habitaciones</button>
         </form>
+        <p id="error-fechas"></p>
     </div>
 </section>
 
-<!-- ══ NUESTRAS HABITACIONES ══ -->
-<section class="section-habitaciones" id="habitaciones">
-    <div class="section-header">
-        <span class="section-label">Alojamiento</span>
-        <h2 class="section-title">Nuestras Habitaciones</h2>
-        <p class="section-desc">
-            Tres categorías disponibles para reservar en línea ahora mismo.
-            Consulta disponibilidad por fechas y confirma al instante.
-        </p>
-    </div>
-
-    <div class="habitaciones-lux-grid">
-
-        <!-- Habitación Simple -->
-        <div class="hab-card-lux">
-            <div class="hab-card-img">
-                <div class="hab-img-gradient" style="background: linear-gradient(145deg, #1a4a7a 0%, #0d3560 40%, #1a6e8a 70%, #0a2a50 100%); display:flex; align-items:center; justify-content:center; font-size:64px; color:rgba(255,255,255,.25);">
-                    🛏
-                </div>
-                <span class="hab-price-tag">Desde S/ 120 / noche</span>
+<!-- ── HABITACIONES ── -->
+<section class="rooms-section" id="habitaciones">
+    <div class="rooms-inner">
+        <div class="rooms-header-row">
+            <div>
+                <span class="psec-label">Alojamiento</span>
+                <h2 class="psec-title">Nuestras Habitaciones</h2>
+                <p class="psec-desc">Tres categorías para reservar en línea ahora mismo.</p>
             </div>
-            <div class="hab-card-body">
-                <h3>Habitación Simple</h3>
-                <p>Acogedora y equipada con todo lo esencial para una estadía cómoda y tranquila. Ideal para viajeros individuales.</p>
-                <div class="hab-card-features">
-                    <span class="hab-feature-tag">Cama Queen</span>
-                    <span class="hab-feature-tag">WiFi</span>
-                    <span class="hab-feature-tag">TV Cable</span>
-                    <span class="hab-feature-tag">Baño privado</span>
-                </div>
-                <a href="catalogo.html" class="btn-ver-detalle">
-                    Ver detalles
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                </a>
-            </div>
+            <a href="catalogo.html" class="pbtn pbtn-outline">Ver catálogo completo →</a>
         </div>
 
-        <!-- Habitación Doble -->
-        <div class="hab-card-lux">
-            <div class="hab-card-img">
-                <div class="hab-img-gradient" style="background: linear-gradient(145deg, #2c1810 0%, #5c3420 40%, #8a5030 65%, #3a1a08 100%); display:flex; align-items:center; justify-content:center; font-size:64px; color:rgba(255,255,255,.25);">
-                    🛏
+        <div class="room-grid">
+            <!-- Simple -->
+            <div class="room-card">
+                <div class="room-img" style="background: linear-gradient(145deg,#1a4a7a,#0d3560);">
+                    <span class="room-img-fallback">🛏</span>
                 </div>
-                <span class="hab-price-tag">Desde S/ 200 / noche</span>
-            </div>
-            <div class="hab-card-body">
-                <h3>Habitación Doble</h3>
-                <p>Espaciosa y elegante, perfecta para parejas o viajeros que desean más comodidad. Vista hacia el jardín o ciudad.</p>
-                <div class="hab-card-features">
-                    <span class="hab-feature-tag">2 Camas o King</span>
-                    <span class="hab-feature-tag">WiFi</span>
-                    <span class="hab-feature-tag">Minibar</span>
-                    <span class="hab-feature-tag">Desayuno</span>
+                <div class="room-body">
+                    <div class="room-header">
+                        <span class="room-name">Habitación Simple</span>
+                        <div>
+                            <div class="room-price-label">Por noche</div>
+                            <div class="room-price-amount">S/ 120</div>
+                        </div>
+                    </div>
+                    <div class="room-specs">
+                        <span class="room-spec">🏠 25 m²</span>
+                        <span class="room-spec">👤 1–2 personas</span>
+                    </div>
+                    <p class="room-desc">Acogedora y equipada con todo lo esencial. Ideal para viajeros individuales que buscan comodidad y tranquilidad.</p>
+                    <div class="room-tags">
+                        <span class="room-tag">Cama Queen</span>
+                        <span class="room-tag">WiFi</span>
+                        <span class="room-tag">TV Cable</span>
+                    </div>
                 </div>
-                <a href="catalogo.html" class="btn-ver-detalle">
-                    Ver detalles
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                </a>
-            </div>
-        </div>
-
-        <!-- Suite -->
-        <div class="hab-card-lux">
-            <div class="hab-card-img">
-                <div class="hab-img-gradient" style="background: linear-gradient(145deg, #1a3a1a 0%, #2a5a30 40%, #3a7a40 65%, #0a2a10 100%); display:flex; align-items:center; justify-content:center; font-size:64px; color:rgba(255,255,255,.25);">
-                    🌟
+                <div class="room-footer">
+                    <a href="catalogo.html" class="pbtn pbtn-dark pbtn-full">Reservar Ahora</a>
                 </div>
-                <span class="hab-price-tag">Desde S/ 380 / noche</span>
             </div>
-            <div class="hab-card-body">
-                <h3>Suite Ejecutiva</h3>
-                <p>Nuestra habitación más exclusiva. Sala de estar independiente, bañera de lujo y atención personalizada las 24 horas.</p>
-                <div class="hab-card-features">
-                    <span class="hab-feature-tag">Sala de estar</span>
-                    <span class="hab-feature-tag">Jacuzzi</span>
-                    <span class="hab-feature-tag">Vista panorámica</span>
-                    <span class="hab-feature-tag">Mayordomo</span>
+
+            <!-- Doble -->
+            <div class="room-card">
+                <div class="room-img" style="background: linear-gradient(145deg,#2c1810,#5c3420);">
+                    <span class="room-badge-popular">MÁS POPULAR</span>
+                    <span class="room-img-fallback">🛏</span>
                 </div>
-                <a href="catalogo.html" class="btn-ver-detalle">
-                    Ver detalles
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                </a>
-            </div>
-        </div>
-
-    </div>
-</section>
-
-<!-- ══ SERVICIOS ══ -->
-<section class="section-servicios" id="servicios">
-    <div class="servicios-inner">
-        <div class="servicios-header-row">
-            <div class="section-header">
-                <span class="section-label">Incluido en tu estadía</span>
-                <h2 class="section-title">Servicios del Hotel</h2>
-                <p class="section-desc">
-                    Todo lo que necesitas durante tu visita a Trujillo,
-                    disponible para todos los huéspedes del Hotel Costa Azul.
-                </p>
-            </div>
-            <a href="catalogo.html" class="btn-ver-todos">
-                Ver todos
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
-        </div>
-
-        <div class="servicios-grid">
-
-            <div class="servicio-card">
-                <div class="servicio-icon">🍽️</div>
-                <h3>Restaurante Costero</h3>
-                <p>Sabores del norte peruano elaborados con ingredientes frescos de la región, acompañados de la mejor selección de vinos nacionales.</p>
-                <ul class="servicio-bullets">
-                    <li>Buffet de desayuno 7–10 am</li>
-                    <li>Ceviche y platos a la carta</li>
-                </ul>
+                <div class="room-body">
+                    <div class="room-header">
+                        <span class="room-name">Habitación Doble</span>
+                        <div>
+                            <div class="room-price-label">Por noche</div>
+                            <div class="room-price-amount">S/ 200</div>
+                        </div>
+                    </div>
+                    <div class="room-specs">
+                        <span class="room-spec">🏠 35 m²</span>
+                        <span class="room-spec">👥 2–3 personas</span>
+                    </div>
+                    <p class="room-desc">Espaciosa y elegante, perfecta para parejas o viajeros que desean más comodidad. Vista al jardín o ciudad.</p>
+                    <div class="room-tags">
+                        <span class="room-tag">2 Camas Queen</span>
+                        <span class="room-tag">Desayuno</span>
+                        <span class="room-tag">Minibar</span>
+                    </div>
+                </div>
+                <div class="room-footer">
+                    <a href="catalogo.html" class="pbtn pbtn-dark pbtn-full">Reservar Ahora</a>
+                </div>
             </div>
 
-            <div class="servicio-card">
-                <div class="servicio-icon">🏊</div>
-                <h3>Piscina & Terraza</h3>
-                <p>Relájate en nuestra piscina climatizada con terraza panorámica, perfecta para disfrutar el sol de Trujillo todo el año.</p>
-                <ul class="servicio-bullets">
-                    <li>Acceso de 8 am a 8 pm</li>
-                    <li>Bar de piscina con cócteles</li>
-                </ul>
+            <!-- Suite -->
+            <div class="room-card">
+                <div class="room-img" style="background: linear-gradient(145deg,#1a3a1a,#2a5a30);">
+                    <span class="room-img-fallback">🌟</span>
+                </div>
+                <div class="room-body">
+                    <div class="room-header">
+                        <span class="room-name">Suite Ejecutiva</span>
+                        <div>
+                            <div class="room-price-label">Por noche</div>
+                            <div class="room-price-amount">S/ 380</div>
+                        </div>
+                    </div>
+                    <div class="room-specs">
+                        <span class="room-spec">🏠 65 m²</span>
+                        <span class="room-spec">👥 2–4 personas</span>
+                    </div>
+                    <p class="room-desc">Nuestra habitación más exclusiva. Sala de estar independiente, jacuzzi y atención personalizada las 24 horas.</p>
+                    <div class="room-tags">
+                        <span class="room-tag">Vista panorámica</span>
+                        <span class="room-tag">Jacuzzi</span>
+                        <span class="room-tag">Desayuno</span>
+                    </div>
+                </div>
+                <div class="room-footer">
+                    <a href="catalogo.html" class="pbtn pbtn-dark pbtn-full">Reservar Ahora</a>
+                </div>
             </div>
-
-            <div class="servicio-card">
-                <div class="servicio-icon">📋</div>
-                <h3>Sala de Negocios</h3>
-                <p>Espacios equipados para reuniones y conferencias. WiFi de alta velocidad, proyector y servicios de catering disponibles.</p>
-                <ul class="servicio-bullets">
-                    <li>Sala para hasta 30 personas</li>
-                    <li>Equipos audiovisuales</li>
-                </ul>
-            </div>
-
         </div>
     </div>
 </section>
 
-<!-- ══ UBICACIÓN / CONTACTO ══ -->
-<section class="section-info" id="contacto">
-    <div class="info-inner">
-        <div class="info-text">
-            <span class="section-label">Encuéntranos</span>
-            <h2 class="section-title">En el Corazón de Trujillo</h2>
-            <p class="section-desc">
-                Ubicados estratégicamente para que explores todo lo que Trujillo tiene para ofrecer:
-                Chan Chan, Huanchaco, la Plaza Mayor y el Boulevard.
-            </p>
-            <div class="info-datos">
-                <div class="info-dato">
-                    <span>Dirección</span>
-                    <strong>Av. César Vallejo 1795</strong>
+<!-- ── SERVICIOS ── -->
+<section class="psection" id="servicios" style="background: var(--white);">
+    <div class="psection-header">
+        <span class="psec-label">Incluido en tu estadía</span>
+        <h2 class="psec-title">Servicios del Hotel</h2>
+        <p class="psec-desc">Todo lo que necesitas durante tu visita a Trujillo.</p>
+    </div>
+    <div class="servicios-grid">
+        <div class="srv-card">
+            <div class="srv-icon">🍽️</div>
+            <h3>Restaurante Costero</h3>
+            <p>Sabores del norte peruano con ingredientes frescos de la región.</p>
+            <ul class="srv-bullets"><li>Buffet de desayuno 7–10 am</li><li>Ceviche y platos a la carta</li></ul>
+        </div>
+        <div class="srv-card">
+            <div class="srv-icon">🏊</div>
+            <h3>Piscina & Terraza</h3>
+            <p>Relájate en nuestra piscina climatizada con terraza panorámica.</p>
+            <ul class="srv-bullets"><li>Acceso de 8 am a 8 pm</li><li>Bar con cócteles</li></ul>
+        </div>
+        <div class="srv-card">
+            <div class="srv-icon">📋</div>
+            <h3>Sala de Negocios</h3>
+            <p>Espacios equipados para reuniones y conferencias.</p>
+            <ul class="srv-bullets"><li>Sala para hasta 30 personas</li><li>Equipos audiovisuales</li></ul>
+        </div>
+    </div>
+</section>
+
+<!-- ── CONTACTO ── -->
+<section class="contact-section" id="contacto">
+    <div class="contact-inner">
+        <div class="contact-text">
+            <span class="psec-label" style="color:rgba(255,255,255,.45)">Encuéntranos</span>
+            <h2>En el Corazón de Trujillo</h2>
+            <p>Ubicados estratégicamente para que explores Chan Chan, Huanchaco, la Plaza Mayor y el Boulevard.</p>
+            <div class="contact-details">
+                <div class="cdet">
+                    <span class="cdet-icon">📍</span>
+                    <div><div class="cdet-label">Dirección</div><div class="cdet-val">Av. César Vallejo 1795, Trujillo</div></div>
                 </div>
-                <div class="info-dato">
-                    <span>Teléfono</span>
-                    <strong>(044) 123-456</strong>
+                <div class="cdet">
+                    <span class="cdet-icon">📞</span>
+                    <div><div class="cdet-label">Teléfono</div><div class="cdet-val">(044) 123-456</div></div>
                 </div>
-                <div class="info-dato">
-                    <span>Check-in</span>
-                    <strong>Desde las 14:00</strong>
-                </div>
-                <div class="info-dato">
-                    <span>Check-out</span>
-                    <strong>Hasta las 12:00</strong>
+                <div class="cdet">
+                    <span class="cdet-icon">🕐</span>
+                    <div><div class="cdet-label">Check-in / Check-out</div><div class="cdet-val">Desde 14:00 · Hasta 12:00</div></div>
                 </div>
             </div>
         </div>
-        <div class="info-cta-card">
-            <span class="section-label">Reservas & Consultas</span>
-            <p>
-                ¿Tienes preguntas sobre tu estadía o deseas una cotización especial para grupos?
-                Nuestro equipo está disponible para ayudarte las 24 horas.
-            </p>
-            <p style="margin-bottom:8px;">
-                <strong style="color:rgba(255,255,255,.85);">📧 reservas@hotelcostaazul.pe</strong>
-            </p>
-            <p style="margin-bottom:28px;">
-                <strong style="color:rgba(255,255,255,.85);">📞 (044) 123-456</strong>
-            </p>
-            <a href="#buscador" class="btn-contacto">Hacer una reserva</a>
+        <div class="contact-cta">
+            <h3>¿Necesitas ayuda?</h3>
+            <p>Nuestro equipo está disponible las 24 horas para ayudarte con tu reserva o consulta especial.</p>
+            <p style="font-size:13px;color:rgba(255,255,255,.8);font-weight:600;margin-bottom:6px;">📧 reservas@hotelcostaazul.pe</p>
+            <p style="font-size:13px;color:rgba(255,255,255,.8);font-weight:600;margin-bottom:20px;">📞 (044) 123-456</p>
+            <a href="habitaciones.html" class="pbtn pbtn-primary pbtn-full" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3);color:#fff;">Hacer una reserva</a>
         </div>
     </div>
 </section>
 
-<!-- ══ NEWSLETTER ══ -->
-<section class="section-newsletter">
-    <div class="newsletter-inner">
-        <span class="section-label">Ofertas y novedades</span>
-        <h2 class="section-title">Recibe Nuestras Ofertas</h2>
-        <p class="section-desc">
-            Déjanos tu correo y te avisamos cuando haya tarifas especiales y disponibilidad en el Hotel Costa Azul.
-        </p>
-        <form class="newsletter-form" onsubmit="return false;">
-            <input type="email" placeholder="Tu correo electrónico">
-            <button type="submit">Suscribirme</button>
-        </form>
+<!-- ── FOOTER ── -->
+<footer class="pfooter">
+    <div class="pfooter-inner">
+        <div class="pfooter-brand">
+            <h2>Hotel Costa Azul</h2>
+            <p>Trujillo, Perú · Desde 1998</p>
+        </div>
+        <nav class="pfooter-links">
+            <a href="#habitaciones">Habitaciones</a>
+            <a href="#servicios">Servicios</a>
+            <a href="personal.html">Acceso Personal</a>
+            <a href="#contacto">Contacto</a>
+        </nav>
+        <span class="pfooter-copy">© 2026 Hotel Costa Azul</span>
     </div>
-</section>
-
-<!-- ══ FOOTER ══ -->
-<footer class="footer-lux">
-    <a href="index.html" class="footer-brand">Hotel Costa Azul</a>
-    <nav class="footer-links">
-        <a href="#habitaciones">Habitaciones</a>
-        <a href="#servicios">Servicios</a>
-        <a href="personal.html">Acceso Personal</a>
-        <a href="#contacto">Contacto</a>
-    </nav>
-    <span class="footer-copy">© 2026 Hotel Costa Azul · Trujillo, Perú</span>
 </footer>
 
-<!-- ══ SCRIPTS ══ -->
 <script src="js/config.js"></script>
 <script>
-    /* Navbar scroll effect */
-    const navbar = document.getElementById('navbar');
-    window.addEventListener('scroll', () => {
-        navbar.classList.toggle('scrolled', window.scrollY > 60);
-    });
-
-    /* Fechas mínimas */
     const hoy = new Date().toISOString().split('T')[0];
     document.getElementById('checkin').min  = hoy;
     document.getElementById('checkout').min = hoy;
@@ -294,48 +286,33 @@
         document.getElementById('checkout').min = this.value;
     });
 
-    /* Smooth scroll para anclas */
     document.querySelectorAll('a[href^="#"]').forEach(a => {
         a.addEventListener('click', function (e) {
-            const target = document.querySelector(this.getAttribute('href'));
-            if (!target) return;
+            const t = document.querySelector(this.getAttribute('href'));
+            if (!t) return;
             e.preventDefault();
-            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            t.scrollIntoView({ behavior: 'smooth', block: 'start' });
         });
     });
 
-    /* Formulario de búsqueda */
     document.getElementById('form-busqueda').addEventListener('submit', function (e) {
         e.preventDefault();
         const checkin  = document.getElementById('checkin').value;
         const checkout = document.getElementById('checkout').value;
         const tipo     = document.getElementById('tipo').value;
         const personas = document.getElementById('personas').value;
-        const errEl    = document.getElementById('error-fechas-bar');
-
+        const errEl    = document.getElementById('error-fechas');
         if (!checkin || !checkout) {
-            errEl.textContent = 'Por favor ingresa las fechas de entrada y salida.';
-            errEl.style.display = 'block';
-            return;
+            errEl.textContent = 'Por favor ingresa las fechas de entrada y salida.'; errEl.style.display='block'; return;
         }
         if (checkout <= checkin) {
-            errEl.textContent = 'La fecha de salida debe ser posterior a la de entrada.';
-            errEl.style.display = 'block';
-            return;
+            errEl.textContent = 'La fecha de salida debe ser posterior a la de entrada.'; errEl.style.display='block'; return;
         }
-        if (!personas || parseInt(personas) <= 0) {
-            errEl.textContent = 'Ingresa una cantidad de huéspedes mayor a cero.';
-            errEl.style.display = 'block';
-            return;
-        }
-
         errEl.style.display = 'none';
-
         const params = new URLSearchParams({ checkin, checkout, personas });
         if (tipo) params.append('tipo', tipo);
         window.location.href = `habitaciones.html?${params.toString()}`;
     });
 </script>
-
 </body>
 </html>

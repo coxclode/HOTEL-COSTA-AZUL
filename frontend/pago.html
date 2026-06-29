@@ -156,6 +156,7 @@
                     <div class="mtab"        data-m="plin"          onclick="selMetodo(this)">📱 Plin</div>
                     <div class="mtab"        data-m="tarjeta_credito" onclick="selMetodo(this)">💳 T. Crédito</div>
                     <div class="mtab"        data-m="tarjeta_debito"  onclick="selMetodo(this)">💳 T. Débito</div>
+                    <div class="mtab"        data-m="mercadopago"   onclick="selMetodo(this)">🛒 Mercado Pago</div>
                 </div>
 
                 <form id="form-pago">
@@ -251,10 +252,33 @@
                         </div>
                     </div>
 
+                    <!-- MERCADO PAGO -->
+                    <div id="campos-mercadopago" class="campos-metodo">
+                        <div style="text-align:center;padding:12px 0 20px;">
+                            <div style="font-size:52px;margin-bottom:10px;">🛒</div>
+                            <p style="font-size:15px;font-weight:700;color:#0b2f4f;margin-bottom:6px;">
+                                Pagar con Mercado Pago
+                            </p>
+                            <p style="font-size:13px;color:#64748b;margin-bottom:18px;">
+                                Serás redirigido a Mercado Pago para completar el pago de forma segura.<br>
+                                Acepta tarjetas, Yape, Plin, efectivo y más.
+                            </p>
+                            <button type="button" id="btn-mp" onclick="pagarConMP()"
+                                    class="btn btn-primary"
+                                    style="background:#009ee3;border-color:#009ee3;
+                                           font-size:16px;padding:14px 32px;">
+                                🛒 Ir a Mercado Pago
+                            </button>
+                            <div id="mp-loading" style="display:none;margin-top:12px;color:#64748b;font-size:13px;">
+                                Preparando enlace de pago…
+                            </div>
+                        </div>
+                    </div>
+
                     <div id="error-pago" class="alert alert-error"
                          style="display:none;margin:14px 0;"></div>
 
-                    <div style="display:flex;justify-content:space-between;gap:12px;
+                    <div id="acciones-pago" style="display:flex;justify-content:space-between;gap:12px;
                                 padding-top:16px;border-top:1px solid #e2e8f0;margin-top:16px;">
                         <a href="confirmar.html" class="btn btn-secondary">← Volver</a>
                         <button type="submit" class="btn btn-primary" id="btn-agregar">
@@ -412,6 +436,7 @@
             plin:           "📱 Plin",
             tarjeta_credito:"💳 T. Crédito",
             tarjeta_debito: "💳 T. Débito",
+            mercadopago:    "🛒 Mercado Pago",
         }[m] || m;
     }
 
@@ -421,7 +446,14 @@
         tab.classList.add("active");
         metodoActual = tab.dataset.m;
         document.querySelectorAll(".campos-metodo").forEach(c => c.classList.remove("visible"));
-        document.getElementById(`campos-${metodoActual}`).classList.add("visible");
+        const panel = document.getElementById(`campos-${metodoActual}`);
+        if (panel) panel.classList.add("visible");
+
+        // Ocultar/mostrar botón de agregar según método
+        const accionesPago = document.getElementById("acciones-pago");
+        if (accionesPago) {
+            accionesPago.style.display = metodoActual === "mercadopago" ? "none" : "flex";
+        }
         actualizarResumen();
     }
 
@@ -587,6 +619,110 @@
             btn.textContent = "Agregar pago";
         }
     });
+
+    // ── Mercado Pago ──
+    async function pagarConMP() {
+        const errEl  = document.getElementById("error-pago");
+        const btnMp  = document.getElementById("btn-mp");
+        const loading = document.getElementById("mp-loading");
+        errEl.style.display = "none";
+        btnMp.disabled = true;
+        loading.style.display = "block";
+
+        try {
+            const resp = await fetch(`${API_BASE}/api/reservas/${codigoReserva}/mercadopago/preferencia`, {
+                method:  "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ frontend_url: window.location.origin }),
+            });
+            const data = await resp.json();
+            if (!resp.ok) {
+                errEl.textContent = data.error || "No se pudo iniciar el pago con Mercado Pago.";
+                errEl.style.display = "block";
+                btnMp.disabled = false;
+                loading.style.display = "none";
+                return;
+            }
+            // Redirigir al checkout de MP (sandbox en desarrollo, init_point en producción)
+            const url = data.sandbox_init_point || data.init_point;
+            window.location.href = url;
+        } catch {
+            errEl.textContent = "No se pudo conectar con el servidor.";
+            errEl.style.display = "block";
+            btnMp.disabled = false;
+            loading.style.display = "none";
+        }
+    }
+
+    // ── Manejar redirect de vuelta desde Mercado Pago ──
+    (async function manejarRetornoMP() {
+        const params    = new URLSearchParams(window.location.search);
+        const mpStatus  = params.get("mp_status");
+        const mpCodigo  = params.get("mp_codigo");
+        const paymentId = params.get("payment_id") || params.get("collection_id") || "";
+
+        if (!mpStatus || !mpCodigo) return;
+
+        // Limpiar URL para que no queden parámetros visibles
+        history.replaceState({}, "", "pago.html");
+
+        if (mpStatus === "approved") {
+            try {
+                const resp = await fetch(`${API_BASE}/api/reservas/${mpCodigo}/mercadopago/confirmar`, {
+                    method:  "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ payment_id: paymentId, status: "approved" }),
+                });
+                const data = await resp.json();
+
+                if (resp.ok && data.resumen?.reserva_confirmada) {
+                    pagosReg.push(data.pago);
+                    totalPagado = data.resumen.total_pagado;
+                    saldo       = 0;
+                    actualizarResumen();
+
+                    localStorage.setItem("pago_resultado", JSON.stringify({
+                        comprobante: {
+                            codigo_reserva:   mpCodigo,
+                            codigo_operacion: data.pago.codigo_operacion,
+                            precio_total:     precioTotal,
+                            total_pagado:     totalPagado,
+                            pagos:            pagosReg,
+                            estado_pago:      "exitoso",
+                            estado_reserva:   "confirmada",
+                            cliente: `${cliente.nombre || ""} ${cliente.apellido || ""}`.trim(),
+                            correo:  cliente.correo || "",
+                            habitacion: `${hab.tipo} — Nro. ${hab.numero}`,
+                            checkin:    hab.checkin,
+                            checkout:   hab.checkout,
+                            fecha_pago: data.pago.fecha_pago,
+                            metodo_pago: "mercadopago",
+                        },
+                        correo_enviado: false,
+                        comprobante_pdf_url: data.comprobante_pdf_url,
+                    }));
+
+                    document.getElementById("panel-pago").style.display = "none";
+                    document.getElementById("panel-confirmado").style.display = "block";
+                    if (data.comprobante_pdf_url) {
+                        document.getElementById("link-pdf").href = `${API_BASE}${data.comprobante_pdf_url}`;
+                    }
+                }
+            } catch { /* silencioso */ }
+
+        } else if (mpStatus === "failure") {
+            document.getElementById("error-pago").textContent =
+                "El pago con Mercado Pago fue rechazado o cancelado. Intenta con otro método.";
+            document.getElementById("error-pago").style.display = "block";
+        } else if (mpStatus === "pending") {
+            document.getElementById("error-pago").textContent =
+                "El pago está pendiente de acreditación en Mercado Pago.";
+            document.getElementById("error-pago").style.display = "block";
+            document.getElementById("error-pago").style.background = "#fefce8";
+            document.getElementById("error-pago").style.color = "#854d0e";
+            document.getElementById("error-pago").style.border = "1px solid #fde047";
+        }
+    })();
 
     // Inicializar
     actualizarResumen();

@@ -1,141 +1,151 @@
-// ── HU17: Polling de notificaciones para recepcionista ──
+function estadoBadge(estado) {
+    if (!estado) return '<span class="pbadge pbadge-pendiente">Pendiente</span>';
+    const e = estado.toLowerCase();
+    if (e === 'pendiente')      return '<span class="pbadge pbadge-reciente">RECIENTE</span>';
+    if (e === 'confirmada')     return '<span class="pbadge pbadge-confirmado">CONFIRMADO</span>';
+    if (e === 'pendiente_pago') return '<span class="pbadge pbadge-pendiente-pago">PENDIENTE PAGO</span>';
+    return `<span class="pbadge pbadge-pendiente">${estado.toUpperCase()}</span>`;
+}
+
+function cardClass(estado) {
+    if (!estado) return '';
+    const e = estado.toLowerCase();
+    if (e === 'pendiente')      return 'reciente';
+    if (e === 'confirmada')     return 'confirmado';
+    if (e === 'pendiente_pago') return 'pendiente-pago';
+    return '';
+}
+
+function renderNotifCards(lista) {
+    const contenedor = document.getElementById('lista-notificaciones');
+    if (lista.length === 0) {
+        contenedor.innerHTML = `
+            <div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--muted);">
+                <div style="font-size:40px;margin-bottom:10px;">🔕</div>
+                <p>No hay reservas nuevas por gestionar.</p>
+            </div>`;
+        return;
+    }
+
+    contenedor.innerHTML = lista.map(n => {
+        const precio = n.precio_total ? `S/ ${parseFloat(n.precio_total).toFixed(2)}` : '—';
+        return `
+        <div class="res-card ${cardClass(n.estado_reserva)}" id="notif-${n.id_notificacion}">
+            <div class="res-card-header">
+                <span class="res-card-code">#${n.codigo_reserva}</span>
+                ${estadoBadge(n.estado_reserva)}
+            </div>
+            <div class="res-guest">${n.nombre_cliente} ${n.apellido_cliente}</div>
+            <div class="res-detail">🛏 ${n.tipo_habitacion} · Nro. ${n.numero_habitacion}</div>
+            <div class="res-detail">📅 ${n.fecha_checkin} → ${n.fecha_checkout}</div>
+            <div class="res-detail">🕐 ${formatearFecha(n.fecha_creacion)}</div>
+            <div class="res-amount">${precio}</div>
+            <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;">
+                <button class="res-ver-btn" onclick="verDetalleReserva('${n.codigo_reserva}', ${n.id_notificacion})">
+                    Ver detalle →
+                </button>
+                <button class="tbtn tbtn-on" style="font-size:11px;" onclick="marcarLeida(${n.id_notificacion})">
+                    ✓ Marcar leída
+                </button>
+            </div>
+        </div>`;
+    }).join('');
+}
 
 async function pollAhora() {
     try {
         const resp = await fetch(`${API_BASE}/api/recepcion/notificaciones`);
         const data = await resp.json();
-
-        if (!resp.ok) { return; }
+        if (!resp.ok) return;
 
         const cantidad = data.cantidad;
         const lista    = data.notificaciones;
 
-        // Actualizar badge en sidebar
-        const badge = document.getElementById("badge-contador");
+        const badge = document.getElementById('badge-contador');
+        const bell  = document.getElementById('bell-badge');
         if (cantidad > 0) {
             badge.textContent   = cantidad;
-            badge.style.display = "inline";
+            badge.style.display = 'inline';
+            if (bell) { bell.textContent = cantidad; bell.style.display = 'inline'; }
         } else {
-            badge.style.display = "none";
+            badge.style.display = 'none';
+            if (bell) bell.style.display = 'none';
         }
 
-        // Actualizar título
-        document.getElementById("titulo-contador").textContent =
-            cantidad > 0 ? `(${cantidad} sin leer)` : "(ninguna pendiente)";
+        document.getElementById('titulo-contador').textContent =
+            cantidad > 0 ? `${cantidad} sin leer` : 'Sin reservas pendientes';
 
-        // Actualizar hora del último poll
-        const ahora = new Date().toLocaleTimeString("es-PE");
-        document.getElementById("ultimo-poll").textContent = `· ${ahora}`;
+        const ahora = new Date().toLocaleTimeString('es-PE');
+        const pollEl = document.getElementById('ultimo-poll');
+        if (pollEl) pollEl.textContent = `Última actualización: ${ahora}`;
 
-        // Renderizar lista de notificaciones
-        const contenedor = document.getElementById("lista-notificaciones");
+        // Stats
+        const setEl = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
+        setEl('stat-hoy',      lista.filter(n => n.fecha_creacion && n.fecha_creacion.startsWith(new Date().toISOString().slice(0,10))).length || cantidad);
+        setEl('stat-ocup',     '—');
+        setEl('stat-pend',     lista.filter(n => n.estado_reserva === 'pendiente_pago').length);
+        setEl('stat-sinleer',  cantidad);
 
-        if (lista.length === 0) {
-            contenedor.innerHTML = `
-                <div style="text-align:center;padding:40px;color:#64748b;">
-                    <div style="font-size:40px;margin-bottom:10px;">🔕</div>
-                    <p>No hay reservas web nuevas por gestionar.</p>
-                </div>`;
-            return;
-        }
-
-        const items = lista.map(n => `
-            <div class="notif-item" id="notif-${n.id_notificacion}">
-                <div class="notif-info" style="cursor:pointer;"
-                     onclick="verDetalleReserva('${n.codigo_reserva}', ${n.id_notificacion})">
-                    <h4>🔔 Nueva reserva · <span style="color:#0f4c81;">${n.codigo_reserva}</span>
-                        <span style="font-size:11px;color:#94a3b8;font-weight:400;margin-left:8px;">
-                            (clic para ver detalle)
-                        </span>
-                    </h4>
-                    <p>
-                        <strong>${n.nombre_cliente} ${n.apellido_cliente}</strong> reservó la
-                        habitación <strong>${n.numero_habitacion}</strong>
-                        (${n.tipo_habitacion}) del
-                        <strong>${n.fecha_checkin}</strong> al
-                        <strong>${n.fecha_checkout}</strong>
-                    </p>
-                    <p style="font-size:12px;color:#94a3b8;margin-top:4px;">
-                        ${formatearFecha(n.fecha_creacion)}
-                    </p>
-                </div>
-                <button class="btn btn-sm btn-secondary"
-                        onclick="marcarLeida(${n.id_notificacion})">
-                    Marcar leída
-                </button>
-            </div>`).join("");
-
-        contenedor.innerHTML = `<div class="notif-lista">${items}</div>`;
-
-    } catch (err) {
-        // Silencioso — no interrumpir la UI si hay un fallo momentáneo de red
-        document.getElementById("ultimo-poll").textContent = "· sin conexión";
+        if (typeof window._setNotif === 'function') window._setNotif(lista);
+        renderNotifCards(lista);
+    } catch {
+        const p = document.getElementById('ultimo-poll');
+        if (p) p.textContent = 'Sin conexión';
     }
 }
 
 async function marcarLeida(id) {
     try {
-        const resp = await fetch(
-            `${API_BASE}/api/recepcion/notificaciones/${id}/leer`,
-            { method: "PATCH" }
-        );
+        const resp = await fetch(`${API_BASE}/api/recepcion/notificaciones/${id}/leer`, { method: 'PATCH' });
         if (resp.ok) {
-            // Quitar el elemento visualmente sin esperar el poll
             const el = document.getElementById(`notif-${id}`);
-            if (el) el.remove();
-            // Refrescar contadores
+            if (el) { el.style.opacity = '0'; el.style.transition = 'opacity .3s'; setTimeout(() => el.remove(), 300); }
             pollAhora();
         }
-    } catch { /* ignorar */ }
+    } catch { /* silencioso */ }
 }
 
 async function verDetalleReserva(codigoReserva, idNotificacion) {
     await marcarLeida(idNotificacion);
-    // Abre modal con detalle de reserva inline
-    const modal = document.getElementById("modal-detalle");
-    const cuerpo = document.getElementById("modal-cuerpo");
+    const modal  = document.getElementById('modal-detalle');
+    const cuerpo = document.getElementById('modal-cuerpo');
     if (!modal || !cuerpo) return;
 
-    cuerpo.innerHTML = `<p style="text-align:center;color:#64748b;">Cargando...</p>`;
-    modal.style.display = "flex";
+    cuerpo.innerHTML = `<p style="text-align:center;color:var(--muted);padding:24px;">Cargando...</p>`;
+    modal.classList.add('open');
 
     try {
         const resp = await fetch(`${API_BASE}/api/reservas/${codigoReserva}/detalle`);
         if (resp.ok) {
             const r = await resp.json();
             cuerpo.innerHTML = `
-                <h3 style="margin-bottom:16px;color:#0b2f4f;">Reserva: ${r.codigo_reserva}</h3>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:14px;">
-                    <div><span style="color:#64748b;">Cliente</span><br><strong>${r.nombre_cliente} ${r.apellido_cliente}</strong></div>
-                    <div><span style="color:#64748b;">DNI</span><br><strong>${r.dni_cliente}</strong></div>
-                    <div><span style="color:#64748b;">Correo</span><br><strong>${r.correo_cliente}</strong></div>
-                    <div><span style="color:#64748b;">Teléfono</span><br><strong>${r.telefono_cliente}</strong></div>
-                    <div><span style="color:#64748b;">Habitación</span><br><strong>${r.tipo_habitacion} · Nro. ${r.numero_habitacion}</strong></div>
-                    <div><span style="color:#64748b;">Personas</span><br><strong>${r.cantidad_personas}</strong></div>
-                    <div><span style="color:#64748b;">Check-in</span><br><strong>${r.fecha_checkin}</strong></div>
-                    <div><span style="color:#64748b;">Check-out</span><br><strong>${r.fecha_checkout}</strong></div>
-                    <div><span style="color:#64748b;">Total</span><br><strong>S/ ${parseFloat(r.precio_total).toFixed(2)}</strong></div>
-                    <div><span style="color:#64748b;">Estado</span><br>
-                        <span style="background:#dcfce7;color:#166534;padding:3px 10px;border-radius:20px;font-weight:700;font-size:12px;">
-                            ${r.estado}
-                        </span>
-                    </div>
+                <h3 style="font-size:20px;font-weight:900;color:var(--navy);margin-bottom:20px;">Reserva: ${r.codigo_reserva}</h3>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;font-size:13px;">
+                    <div><div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;">Cliente</div><strong>${r.nombre_cliente} ${r.apellido_cliente}</strong></div>
+                    <div><div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;">DNI</div><strong>${r.dni_cliente}</strong></div>
+                    <div><div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;">Correo</div><strong>${r.correo_cliente}</strong></div>
+                    <div><div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;">Teléfono</div><strong>${r.telefono_cliente}</strong></div>
+                    <div><div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;">Habitación</div><strong>${r.tipo_habitacion} · Nro. ${r.numero_habitacion}</strong></div>
+                    <div><div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;">Personas</div><strong>${r.cantidad_personas}</strong></div>
+                    <div><div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;">Check-in</div><strong>${r.fecha_checkin}</strong></div>
+                    <div><div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;">Check-out</div><strong>${r.fecha_checkout}</strong></div>
+                    <div><div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;">Total</div><strong style="color:var(--navy);font-size:15px;">S/ ${parseFloat(r.precio_total).toFixed(2)}</strong></div>
+                    <div><div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;">Estado</div>${estadoBadge(r.estado)}</div>
                 </div>`;
         } else {
-            cuerpo.innerHTML = `<p style="color:#991b1b;">No se encontró detalle de la reserva.</p>`;
+            cuerpo.innerHTML = `<div class="palert palert-error">No se encontró detalle de la reserva.</div>`;
         }
     } catch {
-        cuerpo.innerHTML = `<p style="color:#991b1b;">Error de conexión al cargar la reserva.</p>`;
+        cuerpo.innerHTML = `<div class="palert palert-error">Error de conexión al cargar la reserva.</div>`;
     }
 }
 
 function cerrarModal() {
-    const modal = document.getElementById("modal-detalle");
-    if (modal) modal.style.display = "none";
+    const modal = document.getElementById('modal-detalle');
+    if (modal) modal.classList.remove('open');
 }
 
 function formatearFecha(isoString) {
-    if (!isoString) return "";
-    const d = new Date(isoString);
-    return d.toLocaleString("es-PE");
+    if (!isoString) return '';
+    return new Date(isoString).toLocaleString('es-PE');
 }

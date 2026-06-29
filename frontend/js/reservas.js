@@ -11,6 +11,14 @@ async function generarReserva() {
         return;
     }
 
+    // Evitar doble ejecución simultánea
+    if (localStorage.getItem("_reserva_procesando") === "true") return;
+    if (localStorage.getItem("reserva_resultado")) {
+        window.location.href = "pago.html";
+        return;
+    }
+
+    localStorage.setItem("_reserva_procesando", "true");
     btn.disabled   = true;
     btn.textContent = "Procesando…";
     errEl.style.display = "none";
@@ -39,18 +47,20 @@ async function generarReserva() {
             errEl.textContent = data.error || "Error al procesar la reserva.";
             errEl.style.display = "block";
             btn.disabled   = false;
-            btn.textContent = "Generar reserva";
+            btn.textContent = "Generar reserva y pagar";
+            localStorage.removeItem("_reserva_procesando");
             return;
         }
 
-        // Guardar reserva pendiente y redirigir al pago (HU9)
         localStorage.setItem("reserva_resultado", JSON.stringify(data));
+        localStorage.removeItem("_reserva_procesando");
         window.location.href = "pago.html";
 
     } catch (err) {
         errEl.textContent = "No se pudo conectar con el servidor.";
         errEl.style.display = "block";
         btn.disabled   = false;
-        btn.textContent = "Generar reserva";
+        btn.textContent = "Generar reserva y pagar";
+        localStorage.removeItem("_reserva_procesando");
     }
 }

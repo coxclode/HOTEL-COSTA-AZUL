@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso Personal - Hotel Costa Azul</title>
+    <link rel="stylesheet" href="css/estilos.css">
+    <style>
+        .login-card {
+            max-width: 420px;
+            margin: 80px auto;
+            padding: 0 24px;
+        }
+        .rol-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 22px;
+        }
+        .rol-btn {
+            flex: 1;
+            padding: 14px 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: #fff;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 700;
+            color: #64748b;
+            font-size: 14px;
+            transition: all .2s;
+        }
+        .rol-btn.active {
+            border-color: #0f4c81;
+            background: #eff6ff;
+            color: #0f4c81;
+        }
+        .rol-btn:hover:not(.active) { border-color: #94a3b8; }
+        .rol-icon { font-size: 28px; display: block; margin-bottom: 6px; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <a class="brand" href="index.html">🌊 Hotel Costa Azul</a>
+</nav>
+
+<div class="login-card">
+    <div class="card" style="padding:36px;">
+        <div style="text-align:center;margin-bottom:28px;">
+            <div style="font-size:44px;margin-bottom:10px;">🔐</div>
+            <h1 style="font-size:20px;color:#0b2f4f;margin-bottom:6px;">Acceso para el personal</h1>
+            <p style="font-size:13px;color:#64748b;">Ingresa tus credenciales para continuar.</p>
+        </div>
+
+        <!-- Selección de rol -->
+        <div class="rol-selector">
+            <div class="rol-btn active" id="btn-rol-admin" onclick="selRol('admin')">
+                <span class="rol-icon">🛏️</span>
+                Administrador
+            </div>
+            <div class="rol-btn" id="btn-rol-recepcion" onclick="selRol('recepcion')">
+                <span class="rol-icon">🔔</span>
+                Recepcionista
+            </div>
+        </div>
+
+        <form id="form-login">
+            <div class="form-group" style="margin-bottom:16px;">
+                <label>Usuario</label>
+                <input type="text" id="input-usuario" autocomplete="username"
+                       placeholder="Ingresa tu usuario" required>
+            </div>
+            <div class="form-group" style="margin-bottom:22px;">
+                <label>Contraseña</label>
+                <input type="password" id="input-password" autocomplete="current-password"
+                       placeholder="Ingresa tu contraseña" required>
+            </div>
+
+            <div id="error-login" class="alert alert-error" style="display:none;margin-bottom:16px;"></div>
+
+            <button type="submit" class="btn btn-primary" style="width:100%;padding:14px;">
+                Ingresar
+            </button>
+        </form>
+
+        <div style="text-align:center;margin-top:20px;">
+            <a href="index.html" style="font-size:13px;color:#64748b;">← Volver al inicio</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Credenciales hardcoded para demo universitario
+    const CREDENCIALES = {
+        admin:     { usuario: "admin",     password: "hotel2025" },
+        recepcion: { usuario: "recepcion", password: "hotel2025" },
+    };
+
+    let rolSeleccionado = "admin";
+
+    // Leer rol de URL si viene desde personal.html
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("rol") === "recepcion") {
+        selRol("recepcion");
+    }
+
+    function selRol(rol) {
+        rolSeleccionado = rol;
+        document.getElementById("btn-rol-admin").classList.toggle("active", rol === "admin");
+        document.getElementById("btn-rol-recepcion").classList.toggle("active", rol === "recepcion");
+        document.getElementById("input-usuario").value  = "";
+        document.getElementById("input-password").value = "";
+        document.getElementById("error-login").style.display = "none";
+        document.getElementById("input-usuario").focus();
+    }
+
+    document.getElementById("form-login").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const errEl    = document.getElementById("error-login");
+        const usuario  = document.getElementById("input-usuario").value.trim();
+        const password = document.getElementById("input-password").value;
+        const cred     = CREDENCIALES[rolSeleccionado];
+
+        if (usuario !== cred.usuario || password !== cred.password) {
+            errEl.textContent = "Usuario o contraseña incorrectos.";
+            errEl.style.display = "block";
+            document.getElementById("input-password").value = "";
+            return;
+        }
+
+        errEl.style.display = "none";
+        sessionStorage.setItem("personal_rol",     rolSeleccionado);
+        sessionStorage.setItem("personal_usuario", usuario);
+
+        const redirect = params.get("redirect");
+        if (redirect) {
+            window.location.href = redirect;
+        } else {
+            window.location.href = rolSeleccionado === "admin"
+                ? "admin/index.html"
+                : "recepcion/index.html";
+        }
+    });
+</script>
+
+</body>
+</html>

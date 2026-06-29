@@ -24,10 +24,14 @@ from services.reniec_service import (
     DniNoEncontrado,
     TodosLosProveedoresFallaron,
 )
+from services.mercadopago_service import (
+    mp_configurado,
+    crear_preferencia,
+)
 
 reservas_bp = Blueprint("reservas", __name__)
 
-METODOS_DIGITALES = ("efectivo", "yape", "plin", "transferencia")
+METODOS_DIGITALES = ("efectivo", "yape", "plin", "transferencia", "mercadopago")
 METODOS_TARJETA   = ("tarjeta_credito", "tarjeta_debito")
 METODOS_VALIDOS   = METODOS_DIGITALES + METODOS_TARJETA
 
@@ -38,6 +42,7 @@ PREFIJO_METODO = {
     "transferencia":  "TRF",
     "tarjeta_credito":"TJC",
     "tarjeta_debito": "TJD",
+    "mercadopago":    "MP",
 }
 
 
@@ -739,6 +744,151 @@ def descargar_comprobante(codigo_reserva):
         return response
 
     except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conexion:
+            conexion.close()
+
+
+# ── Mercado Pago: crear preferencia ──
+@reservas_bp.route("/api/reservas/<codigo_reserva>/mercadopago/preferencia", methods=["POST"])
+def mp_crear_preferencia(codigo_reserva):
+    if not mp_configurado():
+        return jsonify({"error": "Mercado Pago no configurado. Agrega MP_ACCESS_TOKEN en .env"}), 503
+
+    data = request.get_json() or {}
+    frontend_base_url = (data.get("frontend_url") or os.getenv("FRONTEND_URL", "")).rstrip("/")
+
+    conexion = None
+    cursor   = None
+    try:
+        conexion = get_connection()
+        cursor   = get_cursor(conexion)
+        cursor.execute("""
+            SELECT r.codigo_reserva, r.nombre_cliente, r.apellido_cliente,
+                   r.correo_cliente, r.precio_total, r.estado,
+                   h.tipo AS tipo_habitacion, h.numero AS numero_habitacion,
+                   r.fecha_checkin, r.fecha_checkout
+            FROM reservas r
+            JOIN habitaciones h ON r.id_habitacion = h.id_habitacion
+            WHERE r.codigo_reserva = %s
+        """, (codigo_reserva,))
+        reserva = cursor.fetchone()
+        if reserva is None:
+            return jsonify({"error": "Reserva no encontrada"}), 404
+        if reserva["estado"] != "pendiente":
+            return jsonify({"error": "La reserva ya fue confirmada o no permite pago"}), 409
+
+        reserva_dict = dict(reserva)
+        reserva_dict["fecha_checkin"]  = str(reserva_dict["fecha_checkin"])
+        reserva_dict["fecha_checkout"] = str(reserva_dict["fecha_checkout"])
+        reserva_dict["precio_total"]   = float(reserva_dict["precio_total"])
+
+        resultado = crear_preferencia(reserva_dict, frontend_base_url)
+        return jsonify(resultado), 201
+
+    except RuntimeError as e:
+        return jsonify({"error": str(e)}), 502
+    except Exception as e:
+        logger.error("[MercadoPago] error al crear preferencia: %s", e)
+        return jsonify({"error": "Error interno al crear preferencia"}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conexion:
+            conexion.close()
+
+
+# ── Mercado Pago: webhook + confirmación por redirect ──
+@reservas_bp.route("/api/mercadopago/webhook", methods=["POST"])
+def mp_webhook():
+    data = request.get_json(silent=True) or {}
+    logger.info("[MercadoPago] webhook recibido: %s", data)
+    return jsonify({"status": "ok"}), 200
+
+
+@reservas_bp.route("/api/reservas/<codigo_reserva>/mercadopago/confirmar", methods=["POST"])
+def mp_confirmar_pago(codigo_reserva):
+    """Registra el pago de Mercado Pago después del redirect de éxito."""
+    if not mp_configurado():
+        return jsonify({"error": "Mercado Pago no configurado"}), 503
+
+    data       = request.get_json() or {}
+    payment_id = (data.get("payment_id") or "").strip()
+    status     = (data.get("status") or "").strip()
+
+    if status != "approved":
+        return jsonify({"error": f"Estado de pago no aprobado: {status}"}), 400
+
+    cod_op = f"MP-{payment_id}" if payment_id else f"MP-{datetime.now().strftime('%Y%m%d%H%M%S')}"
+
+    conexion = None
+    cursor   = None
+    try:
+        conexion = get_connection()
+        cursor   = get_cursor(conexion)
+
+        cursor.execute("""
+            SELECT r.id_reserva, r.precio_total, r.estado,
+                   r.nombre_cliente, r.apellido_cliente, r.correo_cliente
+            FROM reservas r
+            WHERE r.codigo_reserva = %s
+        """, (codigo_reserva,))
+        reserva = cursor.fetchone()
+        if reserva is None:
+            return jsonify({"error": "Reserva no encontrada"}), 404
+        if reserva["estado"] not in ("pendiente",):
+            return jsonify({"error": "La reserva ya fue confirmada"}), 409
+
+        cursor.execute("""
+            SELECT COUNT(*) AS n FROM pagos
+            WHERE id_reserva = %s AND metodo_pago = 'mercadopago' AND estado = 'exitoso'
+        """, (reserva["id_reserva"],))
+        if cursor.fetchone()["n"] > 0:
+            return jsonify({"error": "El pago de Mercado Pago ya fue registrado"}), 409
+
+        precio_total = float(reserva["precio_total"])
+
+        cursor.execute("""
+            INSERT INTO pagos (
+                id_reserva, codigo_operacion, proveedor_transaccion_id,
+                proveedor_estado, metodo_pago, monto, estado
+            )
+            VALUES (%s, %s, %s, 'approved', 'mercadopago', %s, 'exitoso')
+            RETURNING id_pago, fecha_pago
+        """, (reserva["id_reserva"], cod_op, payment_id, precio_total))
+        pago_row = cursor.fetchone()
+
+        cursor.execute("""
+            UPDATE reservas SET estado = 'confirmada' WHERE id_reserva = %s
+        """, (reserva["id_reserva"],))
+
+        conexion.commit()
+
+        return jsonify({
+            "pago": {
+                "codigo_operacion": cod_op,
+                "metodo_pago":      "mercadopago",
+                "monto":            precio_total,
+                "estado":           "exitoso",
+                "fecha_pago":       pago_row["fecha_pago"].isoformat(),
+            },
+            "resumen": {
+                "codigo_reserva":    codigo_reserva,
+                "precio_total":      precio_total,
+                "total_pagado":      precio_total,
+                "saldo_pendiente":   0,
+                "reserva_confirmada": True,
+            },
+            "comprobante_pdf_url": f"/api/reservas/{codigo_reserva}/comprobante.pdf",
+        }), 201
+
+    except Exception as e:
+        if conexion:
+            conexion.rollback()
+        logger.error("[MercadoPago] error al confirmar: %s", e)
         return jsonify({"error": str(e)}), 500
     finally:
         if cursor:

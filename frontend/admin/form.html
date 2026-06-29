@@ -3,107 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Habitación - Hotel Costa Azul</title>
-    <link rel="stylesheet" href="../css/estilos.css">
+    <title>Habitación — Hotel Costa Azul</title>
+    <link rel="stylesheet" href="../css/premium.css">
+    <script>
+        (function() {
+            if (sessionStorage.getItem('personal_rol') !== 'admin')
+                window.location.href = '../login.html?rol=admin&redirect=admin/form.html';
+        })();
+    </script>
 </head>
 <body>
+<div class="ps-layout">
 
-<div class="layout">
-
-    <aside class="sidebar">
-        <div class="brand">
-            <div class="brand-icon">🌊</div>
-            <div>
-                <h2>Hotel Costa Azul</h2>
-                <p>Administrador</p>
-            </div>
+    <!-- SIDEBAR -->
+    <aside class="ps-sidebar">
+        <div class="ps-brand">
+            <h2>Hotel Costa Azul</h2>
+            <span class="ps-brand-sub">Admin Portal</span>
         </div>
-        <nav>
-            <a href="../index.html">🏠 Inicio</a>
-            <a href="index.html" class="active">🛏️ Habitaciones</a>
-            <a href="../recepcion/index.html">🔔 Recepción</a>
+        <nav class="ps-nav">
+            <a href="../index.html"><span class="ps-nav-icon">🏠</span>Inicio</a>
+            <a href="index.html" class="active"><span class="ps-nav-icon">🛏</span>Habitaciones</a>
+            <a href="../recepcion/index.html"><span class="ps-nav-icon">🔔</span>Recepción</a>
         </nav>
     </aside>
 
-    <div class="main-content">
-
-        <div class="topbar">
+    <div class="ps-main">
+        <div class="ps-topbar">
             <div>
-                <h1 id="titulo-form">Registrar habitación</h1>
-                <p>Completa los campos y guarda los cambios.</p>
+                <h1 class="ps-page-title" id="titulo-form">Registrar Habitación</h1>
+                <p class="ps-page-sub">Completa los campos y guarda los cambios.</p>
             </div>
+            <a href="index.html" class="pbtn pbtn-outline">← Volver al listado</a>
         </div>
 
-        <div id="alerta" class="alert" style="display:none;"></div>
+        <div class="ps-content">
+            <div id="alerta" class="palert" style="display:none;margin-bottom:16px;"></div>
 
-        <div class="card" style="max-width:760px;">
-            <form id="form-habitacion">
-                <input type="hidden" id="id-habitacion">
+            <div style="max-width:680px;">
+                <form id="form-habitacion">
+                    <input type="hidden" id="id-habitacion">
 
-                <div class="form-grid" style="gap:18px;margin-bottom:18px;">
-                    <div class="form-group">
-                        <label>Número *</label>
-                        <input type="text" id="numero" placeholder="Ej: 101" required>
+                    <div class="pform-row">
+                        <div class="pform-group">
+                            <label class="pform-label">Número *</label>
+                            <input type="text" id="numero" class="pform-input" placeholder="Ej: 101" required>
+                        </div>
+                        <div class="pform-group">
+                            <label class="pform-label">Tipo *</label>
+                            <select id="tipo" class="pform-input" required>
+                                <option value="">Seleccione…</option>
+                                <option value="Simple">Simple</option>
+                                <option value="Doble">Doble</option>
+                                <option value="Suite">Suite</option>
+                            </select>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Tipo *</label>
-                        <select id="tipo" required>
-                            <option value="">Seleccione…</option>
-                            <option value="Simple">Simple</option>
-                            <option value="Doble">Doble</option>
-                            <option value="Suite">Suite</option>
-                        </select>
+                    <div class="pform-row">
+                        <div class="pform-group">
+                            <label class="pform-label">Precio base (S/) *</label>
+                            <input type="number" id="precio_base" class="pform-input" step="0.01" min="0" placeholder="120.00" required>
+                        </div>
+                        <div class="pform-group">
+                            <label class="pform-label">Capacidad *</label>
+                            <input type="number" id="capacidad" class="pform-input" min="1" placeholder="2" required>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Precio base (S/) *</label>
-                        <input type="number" id="precio_base" step="0.01" min="0"
-                               placeholder="Ej: 120.00" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Capacidad *</label>
-                        <input type="number" id="capacidad" min="1"
-                               placeholder="Ej: 2" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Estado</label>
-                        <select id="estado">
+                    <div class="pform-group">
+                        <label class="pform-label">Estado</label>
+                        <select id="estado" class="pform-input">
                             <option value="Disponible">Disponible</option>
                             <option value="Bloqueada">Bloqueada</option>
                             <option value="Mantenimiento">Mantenimiento</option>
                         </select>
                     </div>
-                </div>
+                    <div class="pform-group">
+                        <label class="pform-label">Descripción *</label>
+                        <textarea id="descripcion" class="pform-input" rows="3"
+                            placeholder="Ej: Habitación doble con baño privado, TV y WiFi." required
+                            style="resize:vertical;"></textarea>
+                    </div>
 
-                <div class="form-group" style="margin-bottom:24px;">
-                    <label>Descripción *</label>
-                    <textarea id="descripcion"
-                        placeholder="Ej: Habitación doble con baño privado, TV y WiFi."
-                        required></textarea>
-                </div>
-
-                <div style="display:flex;justify-content:flex-end;gap:12px;padding-top:16px;border-top:1px solid #e2e8f0;">
-                    <a href="index.html" class="btn btn-secondary">Cancelar</a>
-                    <button type="submit" class="btn btn-primary" id="btn-guardar">Guardar</button>
-                </div>
-            </form>
+                    <div style="display:flex;justify-content:flex-end;gap:12px;padding-top:20px;border-top:1px solid var(--border);">
+                        <a href="index.html" class="pbtn pbtn-outline">Cancelar</a>
+                        <button type="submit" class="pbtn pbtn-dark" id="btn-guardar">Guardar habitación</button>
+                    </div>
+                </form>
+            </div>
         </div>
-
     </div>
 </div>
 
 <script src="../js/config.js"></script>
 <script src="../js/admin.js"></script>
 <script>
-    // Si viene ?id=X, cargar datos para editar
-    const idHab = new URLSearchParams(window.location.search).get("id");
+    const idHab = new URLSearchParams(window.location.search).get('id');
     if (idHab) {
-        document.getElementById("titulo-form").textContent = "Editar habitación";
-        document.getElementById("id-habitacion").value = idHab;
+        document.getElementById('titulo-form').textContent = 'Editar Habitación';
+        document.getElementById('id-habitacion').value = idHab;
         cargarHabitacionParaEditar(idHab);
     }
-
-    document.getElementById("form-habitacion").addEventListener("submit", guardarHabitacion);
+    document.getElementById('form-habitacion').addEventListener('submit', guardarHabitacion);
 </script>
-
 </body>
 </html>

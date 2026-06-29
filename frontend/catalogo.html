@@ -3,43 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo de habitaciones - Hotel Costa Azul</title>
-    <link rel="stylesheet" href="css/estilos.css">
+    <title>Catálogo de Habitaciones — Hotel Costa Azul</title>
+    <link rel="stylesheet" href="css/premium.css">
 </head>
 <body>
 
-<nav class="navbar">
-    <a class="brand" href="index.html">🌊 Hotel Costa Azul</a>
-    <nav>
+<!-- ── NAVBAR ── -->
+<header class="pnav">
+    <a class="pnav-brand" href="index.html">Hotel Costa Azul</a>
+    <nav class="pnav-links">
         <a href="index.html">Inicio</a>
-        <a href="habitaciones.html">Buscar disponibilidad</a>
-        <a href="personal.html">Acceso Personal</a>
+        <a href="catalogo.html" class="active">Habitaciones</a>
+        <a href="personal.html">Personal</a>
     </nav>
-</nav>
-
-<div style="max-width:1100px;margin:0 auto;padding:36px 24px;">
-    <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:24px;">
-        <div>
-            <h1 style="font-size:28px;margin-bottom:8px;">Catálogo de habitaciones</h1>
-            <p id="catalogo-contador" style="color:#64748b;font-size:14px;">
-                Habitaciones disponibles en el hotel.
-            </p>
-        </div>
-        <a href="index.html" class="btn btn-primary">Reservar ahora</a>
+    <div class="pnav-actions">
+        <a href="habitaciones.html" class="pbtn pbtn-dark">Reservar Ahora</a>
     </div>
+</header>
 
-    <div class="alert alert-info" style="margin-bottom:24px;">
-        El catálogo muestra precios base y características. Para reservar, usa la búsqueda por fechas.
+<!-- ── PAGE HEADER ── -->
+<div style="background:var(--white);border-bottom:1px solid var(--border);padding:28px 40px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+    <div>
+        <span class="psec-label">Alojamiento</span>
+        <h1 class="psec-title" style="margin-bottom:4px;">Catálogo de Habitaciones</h1>
+        <p id="catalogo-contador" class="psec-desc">Cargando habitaciones...</p>
     </div>
-
-    <div id="catalogo-contenedor"></div>
+    <a href="habitaciones.html" class="pbtn pbtn-primary">Buscar disponibilidad</a>
 </div>
+
+<div class="pcontainer">
+    <div class="info-banner">
+        ℹ️ El catálogo muestra precios base y características. Para ver disponibilidad real por fechas, usa <strong style="margin-left:4px;">"Buscar disponibilidad"</strong>.
+    </div>
+
+    <div id="catalogo-contenedor">
+        <div style="text-align:center;padding:48px;color:var(--muted);">Cargando catálogo...</div>
+    </div>
+</div>
+
+<!-- ── FOOTER ── -->
+<footer class="pfooter">
+    <div class="pfooter-inner">
+        <div class="pfooter-brand"><h2>Hotel Costa Azul</h2><p>Trujillo, Perú</p></div>
+        <nav class="pfooter-links">
+            <a href="index.html">Inicio</a>
+            <a href="habitaciones.html">Buscar habitaciones</a>
+            <a href="personal.html">Acceso Personal</a>
+        </nav>
+        <span class="pfooter-copy">© 2026 Hotel Costa Azul</span>
+    </div>
+</footer>
 
 <script src="js/config.js"></script>
 <script src="js/catalogo.js"></script>
-<script>
-    cargarCatalogo();
-</script>
-
+<script>cargarCatalogo();</script>
 </body>
 </html>

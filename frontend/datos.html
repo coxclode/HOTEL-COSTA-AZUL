@@ -3,214 +3,232 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Datos del cliente - Hotel Costa Azul</title>
-    <link rel="stylesheet" href="css/estilos.css">
+    <title>Tus Datos — Hotel Costa Azul</title>
+    <link rel="stylesheet" href="css/premium.css">
     <style>
         .dni-spinner {
-            display: inline-block;
-            width: 11px; height: 11px;
-            border: 2px solid #f59e0b;
-            border-top-color: transparent;
-            border-radius: 50%;
-            animation: spin .6s linear infinite;
-            vertical-align: middle;
-            margin-right: 4px;
+            display: inline-block; width: 11px; height: 11px;
+            border: 2px solid #f59e0b; border-top-color: transparent;
+            border-radius: 50%; animation: spin .6s linear infinite;
+            vertical-align: middle; margin-right: 4px;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-<nav class="navbar">
-    <a class="brand" href="index.html">🌊 Hotel Costa Azul</a>
-</nav>
+<!-- ── NAVBAR ── -->
+<header class="pnav">
+    <a class="pnav-brand" href="index.html">Hotel Costa Azul</a>
+    <nav class="pnav-links"></nav>
+    <div class="pnav-actions">
+        <a href="habitaciones.html" class="pbtn pbtn-outline">← Cambiar habitación</a>
+    </div>
+</header>
 
-<div style="max-width:700px;margin:0 auto;padding:36px 24px;">
+<div class="pcontainer-sm">
 
-    <!-- Stepper (HU5 activo) -->
-    <div class="stepper">
-        <div class="step">
-            <div class="step-num">1</div>
-            <span>Buscar</span>
+    <!-- Stepper -->
+    <div class="pstepper" style="margin-bottom:32px;">
+        <div class="pstep done">
+            <div class="pstep-num">✓</div>
+            <span class="pstep-label">Buscar</span>
         </div>
-        <div class="step-line"></div>
-        <div class="step">
-            <div class="step-num">2</div>
-            <span>Seleccionar</span>
+        <div class="pstep-line done"></div>
+        <div class="pstep done">
+            <div class="pstep-num">✓</div>
+            <span class="pstep-label">Seleccionar</span>
         </div>
-        <div class="step-line"></div>
-        <div class="step active">
-            <div class="step-num">3</div>
-            <span>Tus datos</span>
+        <div class="pstep-line"></div>
+        <div class="pstep active">
+            <div class="pstep-num">3</div>
+            <span class="pstep-label">Tus datos</span>
         </div>
-        <div class="step-line"></div>
-        <div class="step">
-            <div class="step-num">4</div>
-            <span>Confirmar</span>
+        <div class="pstep-line"></div>
+        <div class="pstep">
+            <div class="pstep-num">4</div>
+            <span class="pstep-label">Confirmar</span>
         </div>
     </div>
 
-    <!-- Resumen de la habitación seleccionada -->
-    <div class="resumen-card" id="resumen-hab" style="margin-bottom:24px;"></div>
+    <div class="datos-layout">
 
-    <!-- Formulario de datos del cliente (HU5) -->
-    <div class="card">
-        <h2 style="font-size:20px;margin-bottom:20px;">Datos del cliente</h2>
+        <!-- LEFT: form -->
+        <div>
+            <h2 style="font-size:22px;font-weight:900;color:var(--navy);margin-bottom:6px;">Datos del cliente</h2>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:24px;">Completa tus datos para continuar con la reserva.</p>
 
-        <form id="form-datos">
-            <div class="form-grid" style="gap:18px;">
-                <div class="form-group">
-                    <label>Nombres *</label>
-                    <input type="text" id="nombre" placeholder="Ej: Luis" required>
+            <form id="form-datos">
+                <div class="pform-row">
+                    <div class="pform-group">
+                        <label class="pform-label">Nombres *</label>
+                        <input type="text" id="nombre" class="pform-input" placeholder="Ej: Luis" required>
+                    </div>
+                    <div class="pform-group">
+                        <label class="pform-label">Apellidos *</label>
+                        <input type="text" id="apellido" class="pform-input" placeholder="Ej: Mendoza Avila" required>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Apellidos *</label>
-                    <input type="text" id="apellido" placeholder="Ej: Mendoza Avila" required>
+
+                <div class="pform-group">
+                    <label class="pform-label">
+                        DNI * <span id="dni-estado" style="font-weight:400;font-size:12px;letter-spacing:0;text-transform:none;"></span>
+                    </label>
+                    <div class="pform-dni-wrap">
+                        <input type="text" id="dni" class="pform-input" placeholder="12345678"
+                               maxlength="8" inputmode="numeric" pattern="\d{8}" required autocomplete="off">
+                        <button type="button" class="pbtn-reniec" onclick="consultarDniManual()">
+                            🔍 RENIEC
+                        </button>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>DNI * <span id="dni-estado" style="font-weight:400;font-size:12px;"></span></label>
-                    <input type="text" id="dni" placeholder="Ej: 45678901"
-                           maxlength="8" pattern="\d{8}" required autocomplete="off">
+
+                <div class="pform-group">
+                    <label class="pform-label">Teléfono * <span style="font-weight:400;font-size:11px;text-transform:none;letter-spacing:0;">(9 dígitos)</span></label>
+                    <div class="pform-phone-wrap">
+                        <span class="pform-prefix">+51</span>
+                        <input type="tel" id="telefono" class="pform-input" placeholder="987654321"
+                               maxlength="9" inputmode="numeric" pattern="\d{9}" required autocomplete="off">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Teléfono *</label>
-                    <input type="tel" id="telefono" placeholder="Ej: 987654321" required>
+
+                <div class="pform-group">
+                    <label class="pform-label">Correo electrónico *</label>
+                    <input type="email" id="correo" class="pform-input" placeholder="luis@correo.com" required>
                 </div>
-                <div class="form-group col-span-2">
-                    <label>Correo electrónico *</label>
-                    <input type="email" id="correo" placeholder="Ej: luis@correo.com" required>
+
+                <div id="error-datos" class="palert palert-error" style="display:none;"></div>
+
+                <div style="display:flex;justify-content:space-between;margin-top:24px;padding-top:20px;border-top:1px solid var(--border);gap:12px;">
+                    <button type="button" class="pbtn pbtn-outline" onclick="history.back()">← Volver</button>
+                    <button type="submit" class="pbtn pbtn-primary">Continuar → Confirmar</button>
                 </div>
+            </form>
+        </div>
+
+        <!-- RIGHT: booking summary -->
+        <div>
+            <div class="bsummary" id="bsummary">
+                <div style="text-align:center;padding:32px;color:var(--muted);">Cargando resumen...</div>
             </div>
+        </div>
 
-            <div id="error-datos" class="alert alert-error" style="display:none;margin-top:16px;"></div>
-
-            <div style="display:flex;justify-content:space-between;margin-top:24px;padding-top:20px;border-top:1px solid #e2e8f0;">
-                <button type="button" class="btn btn-secondary" onclick="history.back()">← Volver</button>
-                <button type="submit" class="btn btn-primary">Continuar → Confirmar</button>
-            </div>
-        </form>
     </div>
-
 </div>
 
 <script src="js/config.js"></script>
 <script>
-    // Recuperar selección de habitación desde localStorage (HU4)
-    const reservaHab = JSON.parse(localStorage.getItem("reserva_hab") || "null");
+    const reservaHab = JSON.parse(localStorage.getItem('reserva_hab') || 'null');
 
-    if (!reservaHab) {
-        document.querySelector(".card").innerHTML =
-            `<div class="alert alert-error">
+    (function renderSummary() {
+        const box = document.getElementById('bsummary');
+        if (!reservaHab) {
+            box.innerHTML = `<div class="palert palert-error" style="margin:16px;">
                 No hay habitación seleccionada.
-                <a href="index.html" style="color:#991b1b;font-weight:700;">Volver al inicio</a>
-             </div>`;
-    } else {
-        document.getElementById("resumen-hab").innerHTML = `
-            <h3 style="font-size:15px;margin-bottom:14px;">Habitación seleccionada</h3>
-            <div class="resumen-grid">
-                <div class="resumen-item">
-                    <span>Habitación</span>
-                    <strong>${reservaHab.tipo} · Nro. ${reservaHab.numero}</strong>
-                </div>
-                <div class="resumen-item">
-                    <span>Fechas</span>
-                    <strong>${reservaHab.checkin} → ${reservaHab.checkout}</strong>
-                </div>
-                <div class="resumen-item">
-                    <span>Personas</span>
-                    <strong>${reservaHab.personas || 1}</strong>
-                </div>
-                <div class="resumen-item">
-                    <span>Total (${reservaHab.noches} noche/s)</span>
-                    <strong>S/ ${reservaHab.precio_total.toFixed(2)}</strong>
+                <a href="index.html" style="color:var(--danger);font-weight:700;margin-left:6px;">Volver al inicio</a>
+            </div>`;
+            return;
+        }
+        const grad = {Simple:'linear-gradient(145deg,#1a4a7a,#0d3560)',Doble:'linear-gradient(145deg,#2c1810,#5c3420)',Suite:'linear-gradient(145deg,#1a3a1a,#2a5a30)'}[reservaHab.tipo]||'linear-gradient(145deg,#1a4a7a,#0d3560)';
+        const icon = {Simple:'🛏',Doble:'🛏',Suite:'🌟'}[reservaHab.tipo]||'🛏';
+        const pBase = parseFloat(reservaHab.precio_base||0);
+        const noches = parseInt(reservaHab.noches||1);
+        const total  = parseFloat(reservaHab.precio_total||pBase*noches);
+        box.innerHTML = `
+            <div class="bsummary-img" style="background:${grad}"><span style="font-size:52px;">${icon}</span></div>
+            <div class="bsummary-body">
+                <span class="bsummary-type">${reservaHab.tipo}</span>
+                <div class="bsummary-name">Habitación Nro. ${reservaHab.numero}</div>
+                <div class="bsummary-row">📅 <span>${reservaHab.checkin} → ${reservaHab.checkout}</span></div>
+                <div class="bsummary-row">🌙 <span>${noches} noche(s)</span></div>
+                <div class="bsummary-row">👥 <span>${reservaHab.personas||1} persona(s)</span></div>
+                <hr class="bsummary-divider">
+                <div class="bsummary-price-row"><span>Precio base / noche</span><span>S/ ${pBase.toFixed(2)}</span></div>
+                <div class="bsummary-price-row"><span>Noches</span><span>× ${noches}</span></div>
+                <div class="bsummary-price-row bold"><span>Total</span><span>S/ ${total.toFixed(2)}</span></div>
+                <div class="bsummary-secure">
+                    <span style="font-size:22px;">🔒</span>
+                    <div>
+                        <h4>Reserva Segura</h4>
+                        <p>Tus datos están protegidos. Pago verificado con encriptación SSL.</p>
+                    </div>
                 </div>
             </div>`;
+    })();
+
+    // ── DNI: solo números ──
+    let _debounce = null;
+    document.getElementById('dni').addEventListener('keypress', e => { if (!/\d/.test(e.key)) e.preventDefault(); });
+    document.getElementById('telefono').addEventListener('keypress', e => { if (!/\d/.test(e.key)) e.preventDefault(); });
+    document.getElementById('dni').addEventListener('input', function() { this.value = this.value.replace(/\D/g,'').slice(0,8); });
+    document.getElementById('telefono').addEventListener('input', function() { this.value = this.value.replace(/\D/g,'').slice(0,9); });
+
+    document.getElementById('dni').addEventListener('input', function() {
+        clearTimeout(_debounce);
+        const dni = this.value.trim();
+        setDniEstado('','');
+        if (dni.length === 8) _debounce = setTimeout(() => consultarDni(dni), 400);
+    });
+
+    function consultarDniManual() {
+        const dni = document.getElementById('dni').value.trim();
+        if (dni.length === 8) consultarDni(dni);
     }
 
-    // ── Verificación DNI — HU5 ──
-    // El frontend nunca llama a RENIEC directamente: siempre consulta /api/dni/{dni}.
-    // El backend orquesta los proveedores con failover automático (ReniecService).
-    // Si ningún proveedor responde, el formulario permite ingresar datos manualmente.
-
-    let _debounceTimer = null;
-
     function setDniEstado(texto, color, spinner = false) {
-        const el = document.getElementById("dni-estado");
-        el.innerHTML = spinner
-            ? `<span class="dni-spinner"></span> ${texto}`
-            : texto;
+        const el = document.getElementById('dni-estado');
+        el.innerHTML = spinner ? `<span class="dni-spinner"></span> ${texto}` : texto;
         el.style.color = color;
     }
 
-    document.getElementById("dni").addEventListener("input", function () {
-        clearTimeout(_debounceTimer);
-        const dni = this.value.trim();
-        const estadoEl = document.getElementById("dni-estado");
-
-        if (!dni) { estadoEl.textContent = ""; return; }
-        if (!/^\d{1,8}$/.test(dni)) {
-            setDniEstado("Solo se permiten dígitos", "#991b1b");
-            return;
-        }
-        if (dni.length < 8) { estadoEl.textContent = ""; return; }
-
-        // Esperar 400 ms después del último carácter antes de consultar
-        _debounceTimer = setTimeout(() => consultarDni(dni), 400);
-    });
-
     async function consultarDni(dni) {
-        setDniEstado("Consultando RENIEC…", "#92400e", true);
-
-        // Limpiar campos anteriores
-        document.getElementById("nombre").value   = "";
-        document.getElementById("apellido").value = "";
-
+        setDniEstado('Consultando RENIEC…', '#92400e', true);
+        document.getElementById('nombre').value = '';
+        document.getElementById('apellido').value = '';
         try {
             const resp = await fetch(`${API_BASE}/api/dni/${dni}`);
             const data = await resp.json();
-
             if (resp.ok && data.verificado) {
-                document.getElementById("nombre").value   = data.nombres || "";
-                document.getElementById("apellido").value =
-                    `${data.apellido_paterno || ""} ${data.apellido_materno || ""}`.trim();
-                setDniEstado("✔ Verificado en RENIEC", "#166534");
+                document.getElementById('nombre').value   = data.nombres || '';
+                document.getElementById('apellido').value = `${data.apellido_paterno||''} ${data.apellido_materno||''}`.trim();
+                setDniEstado('✔ Verificado en RENIEC', '#166534');
             } else if (resp.status === 404) {
-                setDniEstado("⚠ DNI no encontrado — ingresa tus datos manualmente", "#92400e");
+                setDniEstado('⚠ DNI no encontrado — ingresa tus datos manualmente', '#92400e');
             } else if (resp.status === 503) {
-                setDniEstado("ℹ Servicio RENIEC no disponible — ingresa tus datos manualmente", "#64748b");
+                setDniEstado('ℹ Servicio RENIEC no disponible — ingresa tus datos manualmente', '#64748b');
             } else {
-                setDniEstado("ℹ No se pudo verificar — ingresa tus datos manualmente", "#64748b");
+                setDniEstado('ℹ No se pudo verificar — ingresa tus datos manualmente', '#64748b');
             }
         } catch {
-            setDniEstado("ℹ Sin conexión con el servidor — ingresa tus datos manualmente", "#64748b");
+            setDniEstado('ℹ Sin conexión con el servidor — ingresa tus datos manualmente', '#64748b');
         }
     }
 
-    document.getElementById("form-datos").addEventListener("submit", function (e) {
+    document.getElementById('form-datos').addEventListener('submit', function(e) {
         e.preventDefault();
-        const errEl   = document.getElementById("error-datos");
-        const nombre   = document.getElementById("nombre").value.trim();
-        const apellido = document.getElementById("apellido").value.trim();
-        const dni      = document.getElementById("dni").value.trim();
-        const correo   = document.getElementById("correo").value.trim();
-        const telefono = document.getElementById("telefono").value.trim();
+        const errEl    = document.getElementById('error-datos');
+        const nombre   = document.getElementById('nombre').value.trim();
+        const apellido = document.getElementById('apellido').value.trim();
+        const dni      = document.getElementById('dni').value.trim();
+        const correo   = document.getElementById('correo').value.trim();
+        const telefono = document.getElementById('telefono').value.trim();
 
         if (!nombre || !apellido || !dni || !correo || !telefono) {
-            errEl.textContent = "Todos los campos son obligatorios.";
-            errEl.style.display = "block";
-            return;
+            errEl.textContent = 'Todos los campos son obligatorios.';
+            errEl.style.display = 'block'; return;
         }
         if (!/^\d{8}$/.test(dni)) {
-            errEl.textContent = "El DNI debe tener exactamente 8 dígitos.";
-            errEl.style.display = "block";
-            return;
+            errEl.textContent = 'El DNI debe tener exactamente 8 dígitos numéricos.';
+            errEl.style.display = 'block'; return;
         }
-
-        errEl.style.display = "none";
-        localStorage.setItem("reserva_cliente", JSON.stringify({ nombre, apellido, dni, correo, telefono }));
-        window.location.href = "confirmar.html";
+        if (!/^\d{9}$/.test(telefono)) {
+            errEl.textContent = 'El teléfono debe tener exactamente 9 dígitos numéricos.';
+            errEl.style.display = 'block'; return;
+        }
+        errEl.style.display = 'none';
+        localStorage.setItem('reserva_cliente', JSON.stringify({ nombre, apellido, dni, correo, telefono }));
+        window.location.href = 'confirmar.html';
     });
 </script>
-
 </body>
 </html>

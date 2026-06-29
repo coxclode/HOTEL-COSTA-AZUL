@@ -24,8 +24,10 @@ def poll_notificaciones():
                 r.apellido_cliente,
                 r.fecha_checkin,
                 r.fecha_checkout,
-                h.tipo  AS tipo_habitacion,
-                h.numero AS numero_habitacion
+                r.estado          AS estado_reserva,
+                r.precio_total    AS precio_total,
+                h.tipo            AS tipo_habitacion,
+                h.numero          AS numero_habitacion
             FROM notificaciones n
             JOIN reservas    r ON n.id_reserva    = r.id_reserva
             JOIN habitaciones h ON r.id_habitacion = h.id_habitacion
@@ -42,6 +44,8 @@ def poll_notificaciones():
                 notif["fecha_checkin"] = str(notif["fecha_checkin"])
             if notif.get("fecha_checkout"):
                 notif["fecha_checkout"] = str(notif["fecha_checkout"])
+            if notif.get("precio_total") is not None:
+                notif["precio_total"] = float(notif["precio_total"])
 
         return jsonify({"notificaciones": notificaciones, "cantidad": len(notificaciones)})
 

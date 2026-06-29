@@ -98,7 +98,14 @@
 
     <div id="error-confirmar" class="alert alert-error" style="display:none;"></div>
 
-    <div style="display:flex;justify-content:space-between;gap:12px;">
+    <!-- Aviso si ya hay reserva generada -->
+    <div id="aviso-ya-reservada" class="alert"
+         style="display:none;background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;border-radius:10px;padding:14px 18px;margin-bottom:16px;">
+        ✅ Ya generaste esta reserva. <strong>No se puede duplicar.</strong>
+        <br><a href="pago.html" style="color:#1d4ed8;font-weight:700;margin-top:6px;display:inline-block;">→ Continuar al pago</a>
+    </div>
+
+    <div id="acciones-confirmar" style="display:flex;justify-content:space-between;gap:12px;">
         <button class="btn btn-secondary" onclick="history.back()">← Editar datos</button>
         <button id="btn-confirmar" class="btn btn-primary">Generar reserva y pagar</button>
     </div>
@@ -114,6 +121,13 @@
     if (!hab || !cliente) {
         window.location.href = "index.html";
     } else {
+        // Si ya existe una reserva generada para esta habitación/fechas, bloquear duplicado
+        const resultadoExistente = JSON.parse(localStorage.getItem("reserva_resultado") || "null");
+        if (resultadoExistente) {
+            document.getElementById("aviso-ya-reservada").style.display = "block";
+            document.getElementById("acciones-confirmar").style.display = "none";
+        }
+
         document.getElementById("conf-tipo").textContent        = hab.tipo;
         document.getElementById("conf-numero").textContent      = `Nro. ${hab.numero}`;
         document.getElementById("conf-precio-noche").textContent = `S/ ${parseFloat(hab.precio_base).toFixed(2)}`;

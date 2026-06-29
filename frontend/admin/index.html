@@ -3,85 +3,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Administrador - Hotel Costa Azul</title>
-    <link rel="stylesheet" href="../css/estilos.css">
+    <title>Panel Administrador — Hotel Costa Azul</title>
+    <link rel="stylesheet" href="../css/premium.css">
+    <script>
+        (function() {
+            if (sessionStorage.getItem('personal_rol') !== 'admin')
+                window.location.href = '../login.html?rol=admin&redirect=admin/index.html';
+        })();
+    </script>
 </head>
 <body>
+<div class="ps-layout">
 
-<div class="layout">
-
-    <aside class="sidebar">
-        <div class="brand">
-            <div class="brand-icon">🌊</div>
+    <!-- SIDEBAR -->
+    <aside class="ps-sidebar">
+        <div class="ps-brand">
+            <h2>Hotel Costa Azul</h2>
+            <span class="ps-brand-sub">Admin Portal</span>
+        </div>
+        <nav class="ps-nav">
+            <a href="../index.html"><span class="ps-nav-icon">🏠</span>Inicio</a>
+            <a href="index.html" class="active"><span class="ps-nav-icon">🛏</span>Habitaciones</a>
+            <a href="../recepcion/index.html"><span class="ps-nav-icon">🔔</span>Recepción</a>
+        </nav>
+        <a href="form.html" class="ps-newbtn">+ Nueva habitación</a>
+        <div class="ps-user">
+            <div class="ps-avatar" id="sb-avatar">A</div>
             <div>
-                <h2>Hotel Costa Azul</h2>
-                <p>Administrador</p>
+                <div class="ps-user-name" id="sb-user">admin</div>
+                <div class="ps-user-role">Administrador</div>
             </div>
         </div>
-        <nav>
-            <a href="../index.html">🏠 Inicio</a>
-            <a href="index.html" class="active">🛏️ Habitaciones</a>
-            <a href="../recepcion/index.html">🔔 Recepción</a>
+        <nav class="ps-nav" style="padding-top:0;">
+            <a href="#" class="logout" onclick="cerrarSesion()"><span class="ps-nav-icon">🚪</span>Cerrar sesión</a>
         </nav>
     </aside>
 
-    <div class="main-content">
+    <!-- MAIN -->
+    <div class="ps-main">
 
-        <div class="topbar">
+        <!-- Topbar -->
+        <div class="ps-topbar">
             <div>
-                <h1>Gestión de habitaciones</h1>
-                <p>Registra, edita y controla la disponibilidad de las habitaciones.</p>
+                <h1 class="ps-page-title">Gestión de Habitaciones</h1>
+                <p class="ps-page-sub">Registra, edita y controla la disponibilidad de las habitaciones.</p>
             </div>
-            <a href="form.html" class="btn btn-primary">+ Nueva habitación</a>
+            <a href="form.html" class="pbtn pbtn-dark">+ Nueva habitación</a>
         </div>
 
-        <!-- Estadísticas rápidas -->
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:24px;">
-            <div class="card" style="text-align:center;">
-                <p style="color:#64748b;font-size:13px;">Total habitaciones</p>
-                <p id="stat-total" style="font-size:32px;font-weight:800;color:#0b2f4f;margin-top:6px;">—</p>
-            </div>
-            <div class="card" style="text-align:center;">
-                <p style="color:#64748b;font-size:13px;">Disponibles</p>
-                <p id="stat-disponibles" style="font-size:32px;font-weight:800;color:#166534;margin-top:6px;">—</p>
-            </div>
-            <div class="card" style="text-align:center;">
-                <p style="color:#64748b;font-size:13px;">Bloqueadas</p>
-                <p id="stat-bloqueadas" style="font-size:32px;font-weight:800;color:#991b1b;margin-top:6px;">—</p>
-            </div>
-        </div>
+        <div class="ps-content">
 
-        <div id="alerta" class="alert" style="display:none;"></div>
+            <!-- Stats -->
+            <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-label">Total</span>
+                        <div class="stat-icon blue">🛏</div>
+                    </div>
+                    <div class="stat-value" id="stat-total">—</div>
+                    <div class="stat-sub">habitaciones</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-label">Disponibles</span>
+                        <div class="stat-icon green">✓</div>
+                    </div>
+                    <div class="stat-value" id="stat-disponibles">—</div>
+                    <div class="stat-sub ok">listas para reservar</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-label">Bloqueadas</span>
+                        <div class="stat-icon red">⛔</div>
+                    </div>
+                    <div class="stat-value" id="stat-bloqueadas">—</div>
+                    <div class="stat-sub bad">no disponibles</div>
+                </div>
+            </div>
 
-        <div class="card">
-            <div class="tabla-wrapper">
-                <table>
+            <div id="alerta" class="palert" style="display:none;margin-bottom:16px;"></div>
+
+            <!-- Search + filter bar -->
+            <div class="atable-bar">
+                <div class="asearch-wrap">
+                    <span>🔍</span>
+                    <input type="text" id="busqueda" placeholder="Buscar por número o tipo…" oninput="filtrarTabla()">
+                </div>
+                <select class="afilter-select" id="filtro-estado" onchange="filtrarTabla()">
+                    <option value="">Todos los estados</option>
+                    <option value="Disponible">Disponible</option>
+                    <option value="Bloqueada">Bloqueada</option>
+                    <option value="Mantenimiento">Mantenimiento</option>
+                </select>
+            </div>
+
+            <!-- Table -->
+            <div class="ptable-wrap">
+                <table class="ptable">
                     <thead>
                         <tr>
                             <th>Nro.</th>
-                            <th>Tipo</th>
-                            <th>Precio/noche</th>
+                            <th>Habitación</th>
+                            <th>Precio / noche</th>
                             <th>Capacidad</th>
                             <th>Estado</th>
-                            <th>Descripción</th>
                             <th style="text-align:right;">Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="tabla-body">
-                        <tr><td colspan="7" style="text-align:center;color:#64748b;padding:32px;">Cargando…</td></tr>
+                        <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:40px;">Cargando…</td></tr>
                     </tbody>
                 </table>
             </div>
-        </div>
 
+        </div>
     </div>
 </div>
 
 <script src="../js/config.js"></script>
 <script src="../js/admin.js"></script>
 <script>
-    cargarHabitaciones();
-</script>
+    (function() {
+        const u = sessionStorage.getItem('personal_usuario') || 'admin';
+        document.getElementById('sb-user').textContent = u;
+        document.getElementById('sb-avatar').textContent = u.charAt(0).toUpperCase();
+    })();
 
+    cargarHabitaciones();
+
+    function cerrarSesion() {
+        sessionStorage.removeItem('personal_rol');
+        sessionStorage.removeItem('personal_usuario');
+        window.location.href = '../personal.html';
+    }
+
+    let _todasFilas = [];
+    function filtrarTabla() {
+        const q     = document.getElementById('busqueda').value.toLowerCase();
+        const est   = document.getElementById('filtro-estado').value;
+        const tbody = document.getElementById('tabla-body');
+        const filas = _todasFilas.filter(h =>
+            (!q || h.numero.toLowerCase().includes(q) || h.tipo.toLowerCase().includes(q)) &&
+            (!est || h.estado === est)
+        );
+        renderFilas(filas);
+    }
+    window._setFilas = function(lista) { _todasFilas = lista; };
+</script>
 </body>
 </html>
