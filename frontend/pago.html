@@ -4,729 +4,456 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pago de reserva — Hotel Costa Azul</title>
-    <link rel="stylesheet" href="css/estilos.css">
+    <link rel="stylesheet" href="css/premium.css">
     <style>
-        /* ── Layout de 2 columnas ── */
+        /* ── Layout ── */
         .pago-layout {
             display: grid;
-            grid-template-columns: 1fr 360px;
+            grid-template-columns: 1fr 340px;
             gap: 24px;
             align-items: start;
         }
-        @media(max-width: 960px) { .pago-layout { grid-template-columns: 1fr; } }
+        @media(max-width:900px) { .pago-layout { grid-template-columns: 1fr; } }
 
-        /* ── Tabs de métodos ── */
-        .metodos-tabs {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 22px;
+        /* ── Selector de opción ── */
+        .pay-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
         }
-        .mtab {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 14px;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
-            background: #fff;
-            color: #64748b;
-            transition: all .18s;
-            user-select: none;
-        }
-        .mtab.active {
-            border-color: #0f4c81;
-            background: #0f4c81;
-            color: #fff;
-        }
-        .mtab:hover:not(.active) { border-color: #0f4c81; color: #0f4c81; }
-
-        /* ── Campos por método ── */
-        .campos-metodo { display: none; }
-        .campos-metodo.visible { display: block; }
-
-        /* ── QR placeholder ── */
-        .qr-box {
-            width: 140px; height: 140px;
-            border: 3px dashed #cbd5e1;
+        .pay-option-btn {
+            border: 2px solid var(--border);
             border-radius: 14px;
+            padding: 16px 12px;
+            background: var(--white);
+            cursor: pointer;
+            text-align: center;
+            transition: all .18s;
+        }
+        .pay-option-btn .po-icon { font-size: 28px; display: block; margin-bottom: 6px; }
+        .pay-option-btn .po-label { font-size: 13px; font-weight: 800; color: var(--muted); }
+        .pay-option-btn.active {
+            border-color: var(--navy);
+            background: var(--navy);
+        }
+        .pay-option-btn.active .po-label { color: #fff; }
+        .pay-option-btn:hover:not(.active) { border-color: var(--navy-mid); }
+
+        /* ── Panel de método ── */
+        .pay-panel { display: none; }
+        .pay-panel.visible { display: block; }
+
+        /* ── QR section ── */
+        .qr-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        @media(max-width:600px) { .qr-section { grid-template-columns: 1fr; } }
+        .qr-card {
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 16px 12px;
+            text-align: center;
+            background: var(--white);
+        }
+        .qr-card img {
+            width: 100%;
+            max-width: 180px;
+            border-radius: 10px;
+            display: block;
+            margin: 0 auto 10px;
+        }
+        .qr-card .qr-label {
+            font-size: 15px;
+            font-weight: 900;
+            color: var(--navy);
+            margin-bottom: 4px;
+        }
+        .qr-card .qr-sub { font-size: 12px; color: var(--muted); }
+
+        /* ── Monto destacado ── */
+        .monto-box {
+            background: var(--navy);
+            color: #fff;
+            border-radius: 14px;
+            padding: 18px 20px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        .monto-box .mb-label { font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,.55); margin-bottom: 4px; }
+        .monto-box .mb-valor { font-size: 36px; font-weight: 900; }
+
+        /* ── Instrucciones ── */
+        .instrucciones {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            color: #14532d;
+        }
+        .instrucciones ol { margin: 8px 0 0 16px; line-height: 1.8; }
+
+        /* ── Botón WhatsApp ── */
+        .btn-whatsapp {
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            margin: 0 auto 18px;
-            color: #94a3b8;
-            font-size: 13px;
-            font-weight: 600;
+            gap: 10px;
+            width: 100%;
+            padding: 16px;
+            background: #25d366;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background .2s;
         }
+        .btn-whatsapp:hover { background: #1ebe5d; color: #fff; }
+
+        /* ── Botón Mercado Pago ── */
+        .btn-mp-fixed {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 18px;
+            background: #009ee3;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background .2s;
+        }
+        .btn-mp-fixed:hover { background: #0085c2; color: #fff; }
+
+        .mp-nota {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-size: 13px;
+            color: #1e40af;
+            margin-bottom: 16px;
+        }
+        .mp-nota strong { color: #1e3a8a; }
 
         /* ── Resumen lateral ── */
         .resumen-pago {
-            background: linear-gradient(145deg, #0f4c81, #0b2f4f);
-            border-radius: 16px;
-            padding: 22px;
+            background: linear-gradient(145deg, var(--navy), #0b2f4f);
+            border-radius: 14px;
+            padding: 20px;
             color: #fff;
             margin-bottom: 16px;
         }
-        .res-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 14px;
-            padding: 5px 0;
-        }
-        .res-row label { color: rgba(255,255,255,.7); }
-        .res-row.pendiente {
-            font-size: 18px;
-            font-weight: 800;
-            border-top: 1px solid rgba(255,255,255,.2);
-            margin-top: 10px;
-            padding-top: 12px;
-        }
-
-        /* ── Lista de pagos ── */
-        .pago-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            border-radius: 8px;
-            padding: 10px 14px;
-            margin-bottom: 8px;
-            font-size: 13px;
-        }
-        .pi-metodo { font-weight: 700; color: #166534; }
-        .pi-meta   { font-size: 11px; color: #64748b; margin-top: 2px; }
-        .pi-monto  { font-weight: 800; color: #15803d; font-size: 15px; }
+        .res-row { display: flex; justify-content: space-between; font-size: 14px; padding: 5px 0; }
+        .res-row label { color: rgba(255,255,255,.65); }
+        .res-row.total { font-size: 20px; font-weight: 900; border-top: 1px solid rgba(255,255,255,.2); margin-top: 10px; padding-top: 12px; }
 
         /* ── Panel confirmado ── */
-        .confirmado {
+        .panel-ok {
             background: linear-gradient(145deg, #14532d, #15803d);
             border-radius: 16px;
-            padding: 32px;
+            padding: 36px 24px;
             text-align: center;
             color: #fff;
         }
-        .confirmado h2 { font-size: 22px; margin-bottom: 8px; }
-        .confirmado p  { color: rgba(255,255,255,.8); margin-bottom: 24px; }
-        .confirmado-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+        .panel-ok h2 { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+        .panel-ok p  { color: rgba(255,255,255,.8); margin-bottom: 24px; }
+        .panel-ok-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+        /* ── Aviso WhatsApp enviado ── */
+        .aviso-wp {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 12px;
+            padding: 14px 16px;
+            text-align: center;
+            color: #14532d;
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 12px;
+            display: none;
+        }
     </style>
 </head>
 <body>
 
-<nav class="navbar">
-    <a class="brand" href="index.html">Hotel Costa Azul</a>
-</nav>
+<!-- ── NAVBAR ── -->
+<header class="pnav">
+    <a class="pnav-brand" href="index.html">Hotel Costa Azul</a>
+    <nav class="pnav-links"></nav>
+</header>
 
-<div style="max-width:1140px;margin:0 auto;padding:32px 24px;">
+<div class="pcontainer" style="max-width:1100px;">
 
     <!-- Stepper -->
-    <div class="stepper">
-        <div class="step"><div class="step-num">1</div><span>Buscar</span></div>
-        <div class="step-line"></div>
-        <div class="step"><div class="step-num">2</div><span>Seleccionar</span></div>
-        <div class="step-line"></div>
-        <div class="step"><div class="step-num">3</div><span>Tus datos</span></div>
-        <div class="step-line"></div>
-        <div class="step"><div class="step-num">4</div><span>Confirmar</span></div>
-        <div class="step-line"></div>
-        <div class="step active"><div class="step-num">5</div><span>Pagar</span></div>
+    <div class="pstepper" style="margin-bottom:28px;">
+        <div class="pstep done"><div class="pstep-num">✓</div><span class="pstep-label">Buscar</span></div>
+        <div class="pstep-line done"></div>
+        <div class="pstep done"><div class="pstep-num">✓</div><span class="pstep-label">Seleccionar</span></div>
+        <div class="pstep-line done"></div>
+        <div class="pstep done"><div class="pstep-num">✓</div><span class="pstep-label">Tus datos</span></div>
+        <div class="pstep-line done"></div>
+        <div class="pstep done"><div class="pstep-num">✓</div><span class="pstep-label">Confirmar</span></div>
+        <div class="pstep-line"></div>
+        <div class="pstep active"><div class="pstep-num">5</div><span class="pstep-label">Pagar</span></div>
     </div>
 
     <div class="pago-layout">
 
-        <!-- ══ COLUMNA IZQUIERDA: formulario ══ -->
+        <!-- ── COLUMNA IZQUIERDA ── -->
         <div>
-            <!-- Panel activo de pago -->
-            <div class="card" id="panel-pago">
-                <h2 style="font-size:20px;margin-bottom:6px;">Agregar pago</h2>
-                <p style="color:#64748b;font-size:13px;margin-bottom:22px;">
-                    Puedes combinar varios métodos hasta completar el total de la reserva.
-                </p>
 
-                <!-- Tabs de métodos -->
-                <div class="metodos-tabs" id="tabs-metodos">
-                    <div class="mtab active" data-m="efectivo"      onclick="selMetodo(this)">💵 Efectivo</div>
-                    <div class="mtab"        data-m="yape"          onclick="selMetodo(this)">📱 Yape</div>
-                    <div class="mtab"        data-m="plin"          onclick="selMetodo(this)">📱 Plin</div>
-                    <div class="mtab"        data-m="tarjeta_credito" onclick="selMetodo(this)">💳 T. Crédito</div>
-                    <div class="mtab"        data-m="tarjeta_debito"  onclick="selMetodo(this)">💳 T. Débito</div>
-                    <div class="mtab"        data-m="mercadopago"   onclick="selMetodo(this)">🛒 Mercado Pago</div>
+            <!-- Panel de pago -->
+            <div id="panel-pago">
+                <h2 style="font-size:22px;font-weight:900;color:var(--navy);margin-bottom:4px;">Elige tu método de pago</h2>
+                <p style="font-size:13px;color:var(--muted);margin-bottom:20px;">Selecciona cómo deseas pagar tu reserva.</p>
+
+                <!-- Selector de método -->
+                <div class="pay-options">
+                    <button class="pay-option-btn active" id="opt-yape" onclick="selOpcion('yape')">
+                        <span class="po-icon">📱</span>
+                        <span class="po-label">Yape / Plin</span>
+                    </button>
+                    <button class="pay-option-btn" id="opt-tarjeta" onclick="selOpcion('tarjeta')">
+                        <span class="po-icon">💳</span>
+                        <span class="po-label">Tarjeta / Mercado Pago</span>
+                    </button>
                 </div>
 
-                <form id="form-pago">
+                <!-- ── PANEL YAPE / PLIN ── -->
+                <div id="panel-yape" class="pay-panel visible">
+
                     <!-- Monto -->
-                    <div class="form-group" style="margin-bottom:18px;">
-                        <label>Monto a registrar (S/) *</label>
-                        <input type="number" id="monto" step="0.01" min="0.01"
-                               placeholder="0.00" required style="font-size:18px;font-weight:700;">
+                    <div class="monto-box">
+                        <div class="mb-label">Monto a pagar</div>
+                        <div class="mb-valor" id="yp-monto">S/ 0.00</div>
                     </div>
 
-                    <!-- EFECTIVO -->
-                    <div id="campos-efectivo" class="campos-metodo visible">
-                        <div class="form-group">
-                            <label>Monto entregado por el cliente (S/) *</label>
-                            <input type="number" id="monto_entregado" step="0.01" min="0.01"
-                                   placeholder="0.00">
+                    <!-- QR -->
+                    <div class="qr-section">
+                        <div class="qr-card">
+                            <img src="img/yape-qr.png" alt="QR Yape"
+                                 onerror="this.outerHTML='<div style=height:160px;display:flex;align-items:center;justify-content:center;font-size:60px;>📲</div>'">
+                            <div class="qr-label">Yape</div>
+                            <div class="qr-sub">Escanea con la app Yape</div>
                         </div>
-                        <div id="vuelto-preview" style="display:none;margin-top:8px;padding:10px 14px;
-                             border-radius:8px;font-size:14px;font-weight:600;"></div>
-                    </div>
-
-                    <!-- YAPE -->
-                    <div id="campos-yape" class="campos-metodo">
-                        <div class="qr-box">
-                            <span style="font-size:40px;">📲</span>
-                            <span>QR Yape</span>
-                        </div>
-                        <div class="form-group">
-                            <label>Número de operación Yape *</label>
-                            <input type="text" id="num_op_yape" placeholder="Ej: 123456789">
+                        <div class="qr-card">
+                            <img src="img/plin-qr.png" alt="QR Plin"
+                                 onerror="this.outerHTML='<div style=height:160px;display:flex;align-items:center;justify-content:center;font-size:60px;>📲</div>'">
+                            <div class="qr-label">Plin</div>
+                            <div class="qr-sub">Escanea con la app Plin</div>
                         </div>
                     </div>
 
-                    <!-- PLIN -->
-                    <div id="campos-plin" class="campos-metodo">
-                        <div class="qr-box">
-                            <span style="font-size:40px;">📲</span>
-                            <span>QR Plin</span>
-                        </div>
-                        <div class="form-group">
-                            <label>Número de operación Plin *</label>
-                            <input type="text" id="num_op_plin" placeholder="Ej: 987654321">
-                        </div>
+                    <!-- Instrucciones -->
+                    <div class="instrucciones">
+                        <strong>¿Cómo pagar?</strong>
+                        <ol>
+                            <li>Escanea el código QR con tu app Yape o Plin</li>
+                            <li>Ingresa el monto exacto: <strong id="yp-monto-inst">S/ 0.00</strong></li>
+                            <li>Realiza el pago y toma captura del comprobante</li>
+                            <li>Presiona el botón de abajo para enviarnos la foto por WhatsApp</li>
+                        </ol>
                     </div>
 
-                    <!-- TARJETA CRÉDITO -->
-                    <div id="campos-tarjeta_credito" class="campos-metodo">
-                        <div class="form-grid" style="gap:14px;">
-                            <div class="form-group" style="grid-column:1/-1;">
-                                <label>Titular de la tarjeta *</label>
-                                <input type="text" id="titular_c" placeholder="Como aparece en la tarjeta">
-                            </div>
-                            <div class="form-group" style="grid-column:1/-1;">
-                                <label>Número de tarjeta *</label>
-                                <input type="text" id="num_c" maxlength="19"
-                                       placeholder="4111 1111 1111 1111" autocomplete="cc-number">
-                            </div>
-                            <div class="form-group">
-                                <label>Vencimiento *</label>
-                                <input type="text" id="venc_c" maxlength="5"
-                                       placeholder="MM/AA" autocomplete="cc-exp">
-                            </div>
-                            <div class="form-group">
-                                <label>CVV *</label>
-                                <input type="password" id="cvv_c" maxlength="4"
-                                       placeholder="123" autocomplete="cc-csc">
-                            </div>
-                        </div>
+                    <!-- Botón WhatsApp -->
+                    <a id="btn-wp" href="#" target="_blank" class="btn-whatsapp" onclick="registrarEnvioWP()">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                        Enviar comprobante por WhatsApp
+                    </a>
+
+                    <div class="aviso-wp" id="aviso-wp">
+                        ✅ ¡Listo! Tu comprobante fue enviado. El hotel confirmará tu pago en breve.
+                    </div>
+                </div>
+
+                <!-- ── PANEL TARJETA / MERCADO PAGO ── -->
+                <div id="panel-tarjeta" class="pay-panel">
+
+                    <!-- Monto nota -->
+                    <div class="mp-nota">
+                        💡 Al ingresar a Mercado Pago, ingresa el monto exacto de tu reserva:
+                        <strong id="mp-monto-nota">S/ 0.00</strong>
                     </div>
 
-                    <!-- TARJETA DÉBITO -->
-                    <div id="campos-tarjeta_debito" class="campos-metodo">
-                        <div class="form-grid" style="gap:14px;">
-                            <div class="form-group" style="grid-column:1/-1;">
-                                <label>Titular de la tarjeta *</label>
-                                <input type="text" id="titular_d" placeholder="Como aparece en la tarjeta">
-                            </div>
-                            <div class="form-group" style="grid-column:1/-1;">
-                                <label>Número de tarjeta *</label>
-                                <input type="text" id="num_d" maxlength="19"
-                                       placeholder="4111 1111 1111 1111" autocomplete="cc-number">
-                            </div>
-                            <div class="form-group">
-                                <label>Vencimiento *</label>
-                                <input type="text" id="venc_d" maxlength="5"
-                                       placeholder="MM/AA" autocomplete="cc-exp">
-                            </div>
-                            <div class="form-group">
-                                <label>CVV *</label>
-                                <input type="password" id="cvv_d" maxlength="4"
-                                       placeholder="123" autocomplete="cc-csc">
-                            </div>
-                        </div>
+                    <!-- Monto -->
+                    <div class="monto-box" style="margin-bottom:16px;">
+                        <div class="mb-label">Monto a pagar</div>
+                        <div class="mb-valor" id="mp-monto">S/ 0.00</div>
                     </div>
 
-                    <!-- MERCADO PAGO -->
-                    <div id="campos-mercadopago" class="campos-metodo">
-                        <div style="text-align:center;padding:12px 0 20px;">
-                            <div style="font-size:52px;margin-bottom:10px;">🛒</div>
-                            <p style="font-size:15px;font-weight:700;color:#0b2f4f;margin-bottom:6px;">
-                                Pagar con Mercado Pago
-                            </p>
-                            <p style="font-size:13px;color:#64748b;margin-bottom:18px;">
-                                Serás redirigido a Mercado Pago para completar el pago de forma segura.<br>
-                                Acepta tarjetas, Yape, Plin, efectivo y más.
-                            </p>
-                            <button type="button" id="btn-mp" onclick="pagarConMP()"
-                                    class="btn btn-primary"
-                                    style="background:#009ee3;border-color:#009ee3;
-                                           font-size:16px;padding:14px 32px;">
-                                🛒 Ir a Mercado Pago
-                            </button>
-                            <div id="mp-loading" style="display:none;margin-top:12px;color:#64748b;font-size:13px;">
-                                Preparando enlace de pago…
-                            </div>
-                        </div>
+                    <!-- Instrucciones -->
+                    <div class="instrucciones" style="margin-bottom:16px;">
+                        <strong>¿Cómo pagar?</strong>
+                        <ol>
+                            <li>Presiona el botón "Ir a Mercado Pago"</li>
+                            <li>En la pasarela ingresa el monto: <strong id="mp-monto-inst">S/ 0.00</strong></li>
+                            <li>Completa los datos de tu tarjeta y confirma el pago</li>
+                            <li>Regresa a esta página y el hotel verificará tu pago</li>
+                        </ol>
                     </div>
 
-                    <div id="error-pago" class="alert alert-error"
-                         style="display:none;margin:14px 0;"></div>
+                    <!-- Botón MP -->
+                    <a href="https://link.mercadopago.com.pe/hcostaazul"
+                       target="_blank"
+                       class="btn-mp-fixed"
+                       onclick="registrarClickMP()">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm-1-7h2v2h-2zm0-8h2v6h-2z"/></svg>
+                        Ir a Mercado Pago
+                    </a>
 
-                    <div id="acciones-pago" style="display:flex;justify-content:space-between;gap:12px;
-                                padding-top:16px;border-top:1px solid #e2e8f0;margin-top:16px;">
-                        <a href="confirmar.html" class="btn btn-secondary">← Volver</a>
-                        <button type="submit" class="btn btn-primary" id="btn-agregar">
-                            Agregar pago
-                        </button>
+                    <div class="aviso-wp" id="aviso-mp" style="margin-top:12px;">
+                        🔄 Se abrió Mercado Pago en una nueva pestaña. Regresa aquí cuando termines.
                     </div>
-                </form>
+                </div>
             </div>
 
-            <!-- Panel confirmado (se muestra cuando saldo = 0) -->
+            <!-- Panel confirmado -->
             <div id="panel-confirmado" style="display:none;">
-                <div class="confirmado">
-                    <div style="font-size:52px;margin-bottom:12px;">✅</div>
-                    <h2>¡Pago completado!</h2>
-                    <p>La reserva ha sido confirmada exitosamente.</p>
-                    <div class="confirmado-btns">
-                        <a id="link-pdf" href="#" target="_blank" class="btn btn-secondary">
-                            Descargar comprobante PDF
-                        </a>
-                        <a href="exitosa.html" class="btn btn-primary"
-                           style="background:#fff;color:#14532d;">
-                            Ver resumen
-                        </a>
+                <div class="panel-ok">
+                    <div style="font-size:56px;margin-bottom:12px;">✅</div>
+                    <h2>¡Comprobante enviado!</h2>
+                    <p>El hotel recibirá tu comprobante y confirmará tu reserva en breve.<br>Te contactaremos al número o correo registrado.</p>
+                    <div class="panel-ok-btns">
+                        <a href="exitosa.html" class="pbtn pbtn-outline" style="color:#fff;border-color:rgba(255,255,255,.4);">Ver resumen de reserva</a>
+                        <a href="index.html" class="pbtn pbtn-dark" style="background:#fff;color:#14532d;">Volver al inicio</a>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- ══ COLUMNA DERECHA: resumen ══ -->
+        <!-- ── COLUMNA DERECHA: resumen ── -->
         <div>
-            <!-- Info de la reserva -->
-            <div class="card" style="margin-bottom:16px;">
-                <h3 style="font-size:13px;color:#64748b;font-weight:700;
-                           letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">
-                    Tu reserva
-                </h3>
-                <div class="resumen-grid">
-                    <div class="resumen-item">
-                        <span>Código</span>
-                        <strong id="r-codigo" style="color:#0f4c81;font-size:15px;">—</strong>
+            <!-- Info reserva -->
+            <div style="background:var(--white);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:16px;">
+                <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;">Tu reserva</div>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    <div style="display:flex;justify-content:space-between;font-size:13px;">
+                        <span style="color:var(--muted);">Código</span>
+                        <strong id="r-codigo" style="color:var(--navy);">—</strong>
                     </div>
-                    <div class="resumen-item">
-                        <span>Habitación</span>
+                    <div style="display:flex;justify-content:space-between;font-size:13px;">
+                        <span style="color:var(--muted);">Habitación</span>
                         <strong id="r-hab">—</strong>
                     </div>
-                    <div class="resumen-item">
-                        <span>Check-in</span>
+                    <div style="display:flex;justify-content:space-between;font-size:13px;">
+                        <span style="color:var(--muted);">Check-in</span>
                         <strong id="r-checkin">—</strong>
                     </div>
-                    <div class="resumen-item">
-                        <span>Check-out</span>
+                    <div style="display:flex;justify-content:space-between;font-size:13px;">
+                        <span style="color:var(--muted);">Check-out</span>
                         <strong id="r-checkout">—</strong>
                     </div>
                 </div>
             </div>
 
-            <!-- Estado de pago -->
+            <!-- Total -->
             <div class="resumen-pago">
                 <div class="res-row">
-                    <label>Total reserva</label>
-                    <span id="res-total">S/ 0.00</span>
+                    <label>Noches</label>
+                    <span id="r-noches">—</span>
                 </div>
                 <div class="res-row">
-                    <label>Total pagado</label>
-                    <span id="res-pagado" style="color:#86efac;">S/ 0.00</span>
+                    <label>Precio / noche</label>
+                    <span id="r-precio-noche">—</span>
                 </div>
-                <div class="res-row pendiente">
-                    <label>Saldo pendiente</label>
-                    <span id="res-pendiente">S/ 0.00</span>
+                <div class="res-row total">
+                    <label>Total a pagar</label>
+                    <span id="res-total">S/ 0.00</span>
                 </div>
             </div>
 
-            <!-- Pagos registrados -->
-            <div class="card">
-                <h3 style="font-size:13px;color:#64748b;font-weight:700;
-                           letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">
-                    Pagos registrados
-                </h3>
-                <div id="lista-pagos">
-                    <p style="color:#94a3b8;font-size:13px;">Sin pagos aún.</p>
+            <!-- Cliente -->
+            <div style="background:var(--white);border:1px solid var(--border);border-radius:16px;padding:20px;">
+                <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;">Cliente</div>
+                <div style="display:flex;flex-direction:column;gap:8px;font-size:13px;">
+                    <div><span style="color:var(--muted);">Nombre: </span><strong id="r-cliente">—</strong></div>
+                    <div><span style="color:var(--muted);">Correo: </span><strong id="r-correo">—</strong></div>
                 </div>
             </div>
         </div>
-
     </div>
 </div>
 
 <script src="js/config.js"></script>
 <script>
-    // ── Estado global ──
-    const resultado  = JSON.parse(localStorage.getItem("reserva_resultado") || "null");
-    const hab        = JSON.parse(localStorage.getItem("reserva_hab")       || "null");
-    const cliente    = JSON.parse(localStorage.getItem("reserva_cliente")   || "{}");
+    const WA_NUMBER     = '51946539418';
+    const resultado     = JSON.parse(localStorage.getItem('reserva_resultado') || 'null');
+    const hab           = JSON.parse(localStorage.getItem('reserva_hab')       || 'null');
+    const cliente       = JSON.parse(localStorage.getItem('reserva_cliente')   || '{}');
 
-    if (!resultado || !hab) { window.location.href = "index.html"; }
+    if (!resultado || !hab) { window.location.href = 'index.html'; }
 
     const codigoReserva = resultado.codigo_reserva;
     const precioTotal   = parseFloat(resultado.precio_total);
-    let metodoActual    = "efectivo";
-    let pagosReg        = [];
-    let totalPagado     = 0;
-    let saldo           = precioTotal;
+    const montoFmt      = `S/ ${precioTotal.toFixed(2)}`;
+    const nombreCliente = `${cliente.nombre || ''} ${cliente.apellido || ''}`.trim();
 
-    // ── Llenar info reserva ──
-    document.getElementById("r-codigo").textContent   = codigoReserva;
-    document.getElementById("r-hab").textContent      = `${hab.tipo} — Nro. ${hab.numero}`;
-    document.getElementById("r-checkin").textContent  = hab.checkin;
-    document.getElementById("r-checkout").textContent = hab.checkout;
-    document.getElementById("monto").value            = precioTotal.toFixed(2);
+    // ── Llenar resumen ──
+    document.getElementById('r-codigo').textContent     = codigoReserva;
+    document.getElementById('r-hab').textContent        = `${hab.tipo} — Nro. ${hab.numero}`;
+    document.getElementById('r-checkin').textContent    = hab.checkin;
+    document.getElementById('r-checkout').textContent   = hab.checkout;
+    document.getElementById('r-noches').textContent     = `${hab.noches || 1} noche(s)`;
+    document.getElementById('r-precio-noche').textContent = `S/ ${parseFloat(hab.precio_base || 0).toFixed(2)}`;
+    document.getElementById('res-total').textContent    = montoFmt;
+    document.getElementById('r-cliente').textContent    = nombreCliente || '—';
+    document.getElementById('r-correo').textContent     = cliente.correo || '—';
 
-    // ── Actualizar panel derecho ──
-    function actualizarResumen() {
-        document.getElementById("res-total").textContent    = `S/ ${precioTotal.toFixed(2)}`;
-        document.getElementById("res-pagado").textContent   = `S/ ${totalPagado.toFixed(2)}`;
-        document.getElementById("res-pendiente").textContent = `S/ ${Math.max(saldo,0).toFixed(2)}`;
-
-        const lista = document.getElementById("lista-pagos");
-        if (pagosReg.length === 0) {
-            lista.innerHTML = '<p style="color:#94a3b8;font-size:13px;">Sin pagos aún.</p>';
-        } else {
-            lista.innerHTML = pagosReg.map(p => {
-                const meta = p.numero_operacion
-                    ? `N° Op: ${p.numero_operacion}`
-                    : p.vuelto > 0 ? `Vuelto: S/ ${p.vuelto.toFixed(2)}` : "";
-                return `
-                    <div class="pago-item">
-                        <div>
-                            <div class="pi-metodo">${fmtMetodo(p.metodo_pago)}</div>
-                            ${meta ? `<div class="pi-meta">${meta}</div>` : ""}
-                        </div>
-                        <div class="pi-monto">S/ ${parseFloat(p.monto).toFixed(2)}</div>
-                    </div>`;
-            }).join("");
-        }
-
-        const btn = document.getElementById("btn-agregar");
-        if (btn) {
-            btn.textContent = saldo > 0.001
-                ? `Agregar S/ ${Math.min(saldo, precioTotal).toFixed(2)}`
-                : "Pago completo";
-            btn.disabled = saldo <= 0.001;
-        }
-
-        // Pre-llenar monto con saldo restante
-        const montoInput = document.getElementById("monto");
-        if (montoInput && saldo > 0) {
-            montoInput.value = Math.max(saldo, 0).toFixed(2);
-        }
-    }
-
-    function fmtMetodo(m) {
-        return {
-            efectivo:       "💵 Efectivo",
-            yape:           "📱 Yape",
-            plin:           "📱 Plin",
-            tarjeta_credito:"💳 T. Crédito",
-            tarjeta_debito: "💳 T. Débito",
-            mercadopago:    "🛒 Mercado Pago",
-        }[m] || m;
-    }
-
-    // ── Seleccionar método ──
-    function selMetodo(tab) {
-        document.querySelectorAll(".mtab").forEach(t => t.classList.remove("active"));
-        tab.classList.add("active");
-        metodoActual = tab.dataset.m;
-        document.querySelectorAll(".campos-metodo").forEach(c => c.classList.remove("visible"));
-        const panel = document.getElementById(`campos-${metodoActual}`);
-        if (panel) panel.classList.add("visible");
-
-        // Ocultar/mostrar botón de agregar según método
-        const accionesPago = document.getElementById("acciones-pago");
-        if (accionesPago) {
-            accionesPago.style.display = metodoActual === "mercadopago" ? "none" : "flex";
-        }
-        actualizarResumen();
-    }
-
-    // ── Cálculo de vuelto en tiempo real ──
-    document.getElementById("monto_entregado").addEventListener("input", calcVuelto);
-    document.getElementById("monto").addEventListener("input", calcVuelto);
-    function calcVuelto() {
-        if (metodoActual !== "efectivo") return;
-        const m = parseFloat(document.getElementById("monto").value) || 0;
-        const e = parseFloat(document.getElementById("monto_entregado").value) || 0;
-        const el = document.getElementById("vuelto-preview");
-        if (e > 0) {
-            const v = e - m;
-            el.style.display = "block";
-            if (v >= 0) {
-                el.textContent = `Vuelto: S/ ${v.toFixed(2)}`;
-                el.style.background = "#f0fdf4"; el.style.color = "#166534";
-                el.style.border = "1px solid #bbf7d0";
-            } else {
-                el.textContent = `Monto insuficiente (faltan S/ ${Math.abs(v).toFixed(2)})`;
-                el.style.background = "#fee2e2"; el.style.color = "#991b1b";
-                el.style.border = "1px solid #fca5a5";
-            }
-        } else {
-            el.style.display = "none";
-        }
-    }
-
-    // ── Formateo de número de tarjeta ──
-    function fmtTarjeta(id) {
-        document.getElementById(id).addEventListener("input", function() {
-            const v = this.value.replace(/\D/g,"").slice(0,16);
-            this.value = v.replace(/(\d{4})(?=\d)/g,"$1 ");
-        });
-    }
-    fmtTarjeta("num_c");
-    fmtTarjeta("num_d");
-
-    // ── Enviar pago ──
-    document.getElementById("form-pago").addEventListener("submit", async function(e) {
-        e.preventDefault();
-        const btn   = document.getElementById("btn-agregar");
-        const errEl = document.getElementById("error-pago");
-        errEl.style.display = "none";
-
-        const monto = parseFloat(document.getElementById("monto").value) || 0;
-
-        if (monto <= 0) {
-            errEl.textContent = "El monto debe ser mayor a cero.";
-            errEl.style.display = "block"; return;
-        }
-        if (monto > saldo + 0.01) {
-            errEl.textContent = `El monto S/ ${monto.toFixed(2)} supera el saldo pendiente S/ ${saldo.toFixed(2)}.`;
-            errEl.style.display = "block"; return;
-        }
-
-        const payload = { metodo_pago: metodoActual, monto };
-
-        if (metodoActual === "efectivo") {
-            const entregado = parseFloat(document.getElementById("monto_entregado").value) || 0;
-            if (entregado < monto) {
-                errEl.textContent = "El monto entregado debe ser mayor o igual al monto del pago.";
-                errEl.style.display = "block"; return;
-            }
-            payload.monto_entregado = entregado;
-
-        } else if (metodoActual === "yape") {
-            payload.numero_operacion = document.getElementById("num_op_yape").value.trim();
-            if (payload.numero_operacion.length < 4) {
-                errEl.textContent = "Ingresa el número de operación Yape (mín. 4 caracteres).";
-                errEl.style.display = "block"; return;
-            }
-
-        } else if (metodoActual === "plin") {
-            payload.numero_operacion = document.getElementById("num_op_plin").value.trim();
-            if (payload.numero_operacion.length < 4) {
-                errEl.textContent = "Ingresa el número de operación Plin (mín. 4 caracteres).";
-                errEl.style.display = "block"; return;
-            }
-
-        } else if (metodoActual === "tarjeta_credito") {
-            payload.titular          = document.getElementById("titular_c").value.trim();
-            payload.numero_tarjeta   = document.getElementById("num_c").value.replace(/\s/g,"");
-            payload.vencimiento      = document.getElementById("venc_c").value.trim();
-            payload.codigo_seguridad = document.getElementById("cvv_c").value.trim();
-
-        } else if (metodoActual === "tarjeta_debito") {
-            payload.titular          = document.getElementById("titular_d").value.trim();
-            payload.numero_tarjeta   = document.getElementById("num_d").value.replace(/\s/g,"");
-            payload.vencimiento      = document.getElementById("venc_d").value.trim();
-            payload.codigo_seguridad = document.getElementById("cvv_d").value.trim();
-        }
-
-        btn.disabled = true;
-        btn.textContent = "Procesando…";
-
-        try {
-            const resp = await fetch(`${API_BASE}/api/reservas/${codigoReserva}/pagos`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
-            });
-            const data = await resp.json();
-
-            if (!resp.ok) {
-                errEl.textContent = data.error || "No se pudo procesar el pago.";
-                errEl.style.display = "block";
-                btn.disabled = false;
-                btn.textContent = "Agregar pago";
-                return;
-            }
-
-            // Actualizar estado local
-            pagosReg.push(data.pago);
-            totalPagado = data.resumen.total_pagado;
-            saldo       = data.resumen.saldo_pendiente;
-            actualizarResumen();
-
-            // Limpiar campos
-            document.getElementById("monto_entregado").value = "";
-            document.getElementById("num_op_yape").value     = "";
-            document.getElementById("num_op_plin").value     = "";
-            document.getElementById("vuelto-preview").style.display = "none";
-
-            if (data.resumen.reserva_confirmada) {
-                // Guardar para exitosa.html
-                localStorage.setItem("pago_resultado", JSON.stringify({
-                    comprobante: {
-                        codigo_reserva:   codigoReserva,
-                        codigo_operacion: data.pago.codigo_operacion,
-                        precio_total:     precioTotal,
-                        total_pagado:     totalPagado,
-                        pagos:            pagosReg,
-                        estado_pago:      "exitoso",
-                        estado_reserva:   "confirmada",
-                        cliente: `${cliente.nombre || ""} ${cliente.apellido || ""}`.trim(),
-                        correo:  cliente.correo  || "",
-                        habitacion: `${hab.tipo} — Nro. ${hab.numero}`,
-                        checkin:    hab.checkin,
-                        checkout:   hab.checkout,
-                        fecha_pago: data.pago.fecha_pago,
-                        metodo_pago: metodoActual,
-                    },
-                    correo_enviado:    data.correo_enviado,
-                    comprobante_pdf_url: data.comprobante_pdf_url,
-                }));
-
-                document.getElementById("panel-pago").style.display = "none";
-                document.getElementById("panel-confirmado").style.display = "block";
-                if (data.comprobante_pdf_url) {
-                    document.getElementById("link-pdf").href =
-                        `${API_BASE}${data.comprobante_pdf_url}`;
-                }
-            } else {
-                btn.disabled = false;
-                btn.textContent = `Agregar S/ ${saldo.toFixed(2)}`;
-            }
-
-        } catch {
-            errEl.textContent = "No se pudo conectar con el servidor.";
-            errEl.style.display = "block";
-            btn.disabled = false;
-            btn.textContent = "Agregar pago";
-        }
+    // ── Llenar montos en paneles ──
+    ['yp-monto', 'yp-monto-inst', 'mp-monto', 'mp-monto-nota', 'mp-monto-inst'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = montoFmt;
     });
 
-    // ── Mercado Pago ──
-    async function pagarConMP() {
-        const errEl  = document.getElementById("error-pago");
-        const btnMp  = document.getElementById("btn-mp");
-        const loading = document.getElementById("mp-loading");
-        errEl.style.display = "none";
-        btnMp.disabled = true;
-        loading.style.display = "block";
+    // ── Armar enlace WhatsApp ──
+    function buildWpUrl() {
+        const texto = encodeURIComponent(
+            `Hola, soy ${nombreCliente}. Adjunto el comprobante de pago de ${montoFmt} ` +
+            `por la reserva #${codigoReserva} en el Hotel Costa Azul. ` +
+            `Fechas: ${hab.checkin} → ${hab.checkout}.`
+        );
+        return `https://wa.me/${WA_NUMBER}?text=${texto}`;
+    }
+    document.getElementById('btn-wp').href = buildWpUrl();
 
-        try {
-            const resp = await fetch(`${API_BASE}/api/reservas/${codigoReserva}/mercadopago/preferencia`, {
-                method:  "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ frontend_url: window.location.origin }),
-            });
-            const data = await resp.json();
-            if (!resp.ok) {
-                errEl.textContent = data.error || "No se pudo iniciar el pago con Mercado Pago.";
-                errEl.style.display = "block";
-                btnMp.disabled = false;
-                loading.style.display = "none";
-                return;
-            }
-            // Redirigir al checkout de MP (sandbox en desarrollo, init_point en producción)
-            const url = data.sandbox_init_point || data.init_point;
-            window.location.href = url;
-        } catch {
-            errEl.textContent = "No se pudo conectar con el servidor.";
-            errEl.style.display = "block";
-            btnMp.disabled = false;
-            loading.style.display = "none";
-        }
+    // ── Seleccionar opción ──
+    function selOpcion(op) {
+        document.getElementById('opt-yape').classList.toggle('active',    op === 'yape');
+        document.getElementById('opt-tarjeta').classList.toggle('active', op === 'tarjeta');
+        document.getElementById('panel-yape').classList.toggle('visible',    op === 'yape');
+        document.getElementById('panel-tarjeta').classList.toggle('visible', op === 'tarjeta');
     }
 
-    // ── Manejar redirect de vuelta desde Mercado Pago ──
-    (async function manejarRetornoMP() {
-        const params    = new URLSearchParams(window.location.search);
-        const mpStatus  = params.get("mp_status");
-        const mpCodigo  = params.get("mp_codigo");
-        const paymentId = params.get("payment_id") || params.get("collection_id") || "";
+    // ── Al enviar WhatsApp ──
+    function registrarEnvioWP() {
+        setTimeout(() => {
+            document.getElementById('aviso-wp').style.display = 'block';
+            // Mostrar panel confirmado tras 1.5s
+            setTimeout(() => {
+                document.getElementById('panel-pago').style.display      = 'none';
+                document.getElementById('panel-confirmado').style.display = 'block';
+            }, 1500);
+        }, 800);
+    }
 
-        if (!mpStatus || !mpCodigo) return;
-
-        // Limpiar URL para que no queden parámetros visibles
-        history.replaceState({}, "", "pago.html");
-
-        if (mpStatus === "approved") {
-            try {
-                const resp = await fetch(`${API_BASE}/api/reservas/${mpCodigo}/mercadopago/confirmar`, {
-                    method:  "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ payment_id: paymentId, status: "approved" }),
-                });
-                const data = await resp.json();
-
-                if (resp.ok && data.resumen?.reserva_confirmada) {
-                    pagosReg.push(data.pago);
-                    totalPagado = data.resumen.total_pagado;
-                    saldo       = 0;
-                    actualizarResumen();
-
-                    localStorage.setItem("pago_resultado", JSON.stringify({
-                        comprobante: {
-                            codigo_reserva:   mpCodigo,
-                            codigo_operacion: data.pago.codigo_operacion,
-                            precio_total:     precioTotal,
-                            total_pagado:     totalPagado,
-                            pagos:            pagosReg,
-                            estado_pago:      "exitoso",
-                            estado_reserva:   "confirmada",
-                            cliente: `${cliente.nombre || ""} ${cliente.apellido || ""}`.trim(),
-                            correo:  cliente.correo || "",
-                            habitacion: `${hab.tipo} — Nro. ${hab.numero}`,
-                            checkin:    hab.checkin,
-                            checkout:   hab.checkout,
-                            fecha_pago: data.pago.fecha_pago,
-                            metodo_pago: "mercadopago",
-                        },
-                        correo_enviado: false,
-                        comprobante_pdf_url: data.comprobante_pdf_url,
-                    }));
-
-                    document.getElementById("panel-pago").style.display = "none";
-                    document.getElementById("panel-confirmado").style.display = "block";
-                    if (data.comprobante_pdf_url) {
-                        document.getElementById("link-pdf").href = `${API_BASE}${data.comprobante_pdf_url}`;
-                    }
-                }
-            } catch { /* silencioso */ }
-
-        } else if (mpStatus === "failure") {
-            document.getElementById("error-pago").textContent =
-                "El pago con Mercado Pago fue rechazado o cancelado. Intenta con otro método.";
-            document.getElementById("error-pago").style.display = "block";
-        } else if (mpStatus === "pending") {
-            document.getElementById("error-pago").textContent =
-                "El pago está pendiente de acreditación en Mercado Pago.";
-            document.getElementById("error-pago").style.display = "block";
-            document.getElementById("error-pago").style.background = "#fefce8";
-            document.getElementById("error-pago").style.color = "#854d0e";
-            document.getElementById("error-pago").style.border = "1px solid #fde047";
-        }
-    })();
-
-    // Inicializar
-    actualizarResumen();
+    // ── Al hacer clic en Mercado Pago ──
+    function registrarClickMP() {
+        document.getElementById('aviso-mp').style.display = 'block';
+    }
 </script>
-
 </body>
 </html>
