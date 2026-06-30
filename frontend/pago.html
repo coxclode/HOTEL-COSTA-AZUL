@@ -6,7 +6,6 @@
     <title>Pago de reserva — Hotel Costa Azul</title>
     <link rel="stylesheet" href="css/premium.css">
     <style>
-        /* ── Layout ── */
         .pago-layout {
             display: grid;
             grid-template-columns: 1fr 340px;
@@ -15,110 +14,39 @@
         }
         @media(max-width:900px) { .pago-layout { grid-template-columns: 1fr; } }
 
-        /* ── Selector de opción ── */
-        .pay-options {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-        .pay-option-btn {
-            border: 2px solid var(--border);
-            border-radius: 14px;
-            padding: 16px 12px;
-            background: var(--white);
-            cursor: pointer;
-            text-align: center;
-            transition: all .18s;
-        }
-        .pay-option-btn .po-icon { font-size: 28px; display: block; margin-bottom: 6px; }
-        .pay-option-btn .po-label { font-size: 13px; font-weight: 800; color: var(--muted); }
-        .pay-option-btn.active {
-            border-color: var(--navy);
-            background: var(--navy);
-        }
-        .pay-option-btn.active .po-label { color: #fff; }
-        .pay-option-btn:hover:not(.active) { border-color: var(--navy-mid); }
-
-        /* ── Panel de método ── */
-        .pay-panel { display: none; }
-        .pay-panel.visible { display: block; }
-
-        /* ── QR section ── */
-        .qr-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-bottom: 20px;
-        }
-        @media(max-width:600px) { .qr-section { grid-template-columns: 1fr; } }
-        .qr-card {
-            border: 2px solid var(--border);
-            border-radius: 16px;
-            padding: 16px 12px;
-            text-align: center;
-            background: var(--white);
-        }
-        .qr-card img {
-            width: 100%;
-            max-width: 180px;
-            border-radius: 10px;
-            display: block;
-            margin: 0 auto 10px;
-        }
-        .qr-card .qr-label {
-            font-size: 15px;
-            font-weight: 900;
-            color: var(--navy);
-            margin-bottom: 4px;
-        }
-        .qr-card .qr-sub { font-size: 12px; color: var(--muted); }
-
-        /* ── Monto destacado ── */
         .monto-box {
             background: var(--navy);
             color: #fff;
             border-radius: 14px;
-            padding: 18px 20px;
+            padding: 22px 20px;
             text-align: center;
             margin-bottom: 16px;
         }
         .monto-box .mb-label { font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,.55); margin-bottom: 4px; }
-        .monto-box .mb-valor { font-size: 36px; font-weight: 900; }
+        .monto-box .mb-valor { font-size: 40px; font-weight: 900; }
 
-        /* ── Instrucciones ── */
+        .mp-nota {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-size: 13px;
+            color: #1e40af;
+            margin-bottom: 16px;
+            line-height: 1.6;
+        }
+
         .instrucciones {
             background: #f0fdf4;
             border: 1px solid #bbf7d0;
             border-radius: 12px;
             padding: 14px 16px;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
             font-size: 13px;
             color: #14532d;
         }
-        .instrucciones ol { margin: 8px 0 0 16px; line-height: 1.8; }
+        .instrucciones ol { margin: 8px 0 0 16px; line-height: 2; }
 
-        /* ── Botón WhatsApp ── */
-        .btn-whatsapp {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            width: 100%;
-            padding: 16px;
-            background: #25d366;
-            color: #fff;
-            border: none;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 800;
-            cursor: pointer;
-            text-decoration: none;
-            transition: background .2s;
-        }
-        .btn-whatsapp:hover { background: #1ebe5d; color: #fff; }
-
-        /* ── Botón Mercado Pago ── */
         .btn-mp-fixed {
             display: flex;
             align-items: center;
@@ -138,18 +66,19 @@
         }
         .btn-mp-fixed:hover { background: #0085c2; color: #fff; }
 
-        .mp-nota {
+        .aviso-click {
             background: #eff6ff;
             border: 1px solid #bfdbfe;
             border-radius: 10px;
             padding: 12px 14px;
             font-size: 13px;
             color: #1e40af;
-            margin-bottom: 16px;
+            text-align: center;
+            font-weight: 600;
+            margin-top: 12px;
+            display: none;
         }
-        .mp-nota strong { color: #1e3a8a; }
 
-        /* ── Resumen lateral ── */
         .resumen-pago {
             background: linear-gradient(145deg, var(--navy), #0b2f4f);
             border-radius: 14px;
@@ -161,36 +90,27 @@
         .res-row label { color: rgba(255,255,255,.65); }
         .res-row.total { font-size: 20px; font-weight: 900; border-top: 1px solid rgba(255,255,255,.2); margin-top: 10px; padding-top: 12px; }
 
-        /* ── Panel confirmado ── */
-        .panel-ok {
-            background: linear-gradient(145deg, #14532d, #15803d);
+        .info-card {
+            background: var(--white);
+            border: 1px solid var(--border);
             border-radius: 16px;
-            padding: 36px 24px;
-            text-align: center;
-            color: #fff;
+            padding: 20px;
+            margin-bottom: 16px;
         }
-        .panel-ok h2 { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
-        .panel-ok p  { color: rgba(255,255,255,.8); margin-bottom: 24px; }
-        .panel-ok-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-
-        /* ── Aviso WhatsApp enviado ── */
-        .aviso-wp {
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            border-radius: 12px;
-            padding: 14px 16px;
-            text-align: center;
-            color: #14532d;
-            font-size: 13px;
-            font-weight: 600;
-            margin-top: 12px;
-            display: none;
+        .info-card-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 12px;
         }
+        .info-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px; }
+        .info-row span { color: var(--muted); }
     </style>
 </head>
 <body>
 
-<!-- ── NAVBAR ── -->
 <header class="pnav">
     <a class="pnav-brand" href="index.html">Hotel Costa Azul</a>
     <nav class="pnav-links"></nav>
@@ -215,244 +135,118 @@
 
         <!-- ── COLUMNA IZQUIERDA ── -->
         <div>
+            <h2 style="font-size:22px;font-weight:900;color:var(--navy);margin-bottom:4px;">Completa tu pago</h2>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:20px;">Serás redirigido a Mercado Pago para finalizar de forma segura.</p>
 
-            <!-- Panel de pago -->
-            <div id="panel-pago">
-                <h2 style="font-size:22px;font-weight:900;color:var(--navy);margin-bottom:4px;">Elige tu método de pago</h2>
-                <p style="font-size:13px;color:var(--muted);margin-bottom:20px;">Selecciona cómo deseas pagar tu reserva.</p>
-
-                <!-- Selector de método -->
-                <div class="pay-options">
-                    <button class="pay-option-btn active" id="opt-yape" onclick="selOpcion('yape')">
-                        <span class="po-icon">📱</span>
-                        <span class="po-label">Yape / Plin</span>
-                    </button>
-                    <button class="pay-option-btn" id="opt-tarjeta" onclick="selOpcion('tarjeta')">
-                        <span class="po-icon">💳</span>
-                        <span class="po-label">Tarjeta / Mercado Pago</span>
-                    </button>
-                </div>
-
-                <!-- ── PANEL YAPE / PLIN ── -->
-                <div id="panel-yape" class="pay-panel visible">
-
-                    <!-- Monto -->
-                    <div class="monto-box">
-                        <div class="mb-label">Monto a pagar</div>
-                        <div class="mb-valor" id="yp-monto">S/ 0.00</div>
-                    </div>
-
-                    <!-- QR -->
-                    <div class="qr-section">
-                        <div class="qr-card">
-                            <img src="img/yape-qr.png" alt="QR Yape"
-                                 onerror="this.outerHTML='<div style=height:160px;display:flex;align-items:center;justify-content:center;font-size:60px;>📲</div>'">
-                            <div class="qr-label">Yape</div>
-                            <div class="qr-sub">Escanea con la app Yape</div>
-                        </div>
-                        <div class="qr-card">
-                            <img src="img/plin-qr.png" alt="QR Plin"
-                                 onerror="this.outerHTML='<div style=height:160px;display:flex;align-items:center;justify-content:center;font-size:60px;>📲</div>'">
-                            <div class="qr-label">Plin</div>
-                            <div class="qr-sub">Escanea con la app Plin</div>
-                        </div>
-                    </div>
-
-                    <!-- Instrucciones -->
-                    <div class="instrucciones">
-                        <strong>¿Cómo pagar?</strong>
-                        <ol>
-                            <li>Escanea el código QR con tu app Yape o Plin</li>
-                            <li>Ingresa el monto exacto: <strong id="yp-monto-inst">S/ 0.00</strong></li>
-                            <li>Realiza el pago y toma captura del comprobante</li>
-                            <li>Presiona el botón de abajo para enviarnos la foto por WhatsApp</li>
-                        </ol>
-                    </div>
-
-                    <!-- Botón WhatsApp -->
-                    <a id="btn-wp" href="#" target="_blank" class="btn-whatsapp" onclick="registrarEnvioWP()">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                        Enviar comprobante por WhatsApp
-                    </a>
-
-                    <div class="aviso-wp" id="aviso-wp">
-                        ✅ ¡Listo! Tu comprobante fue enviado. El hotel confirmará tu pago en breve.
-                    </div>
-                </div>
-
-                <!-- ── PANEL TARJETA / MERCADO PAGO ── -->
-                <div id="panel-tarjeta" class="pay-panel">
-
-                    <!-- Monto nota -->
-                    <div class="mp-nota">
-                        💡 Al ingresar a Mercado Pago, ingresa el monto exacto de tu reserva:
-                        <strong id="mp-monto-nota">S/ 0.00</strong>
-                    </div>
-
-                    <!-- Monto -->
-                    <div class="monto-box" style="margin-bottom:16px;">
-                        <div class="mb-label">Monto a pagar</div>
-                        <div class="mb-valor" id="mp-monto">S/ 0.00</div>
-                    </div>
-
-                    <!-- Instrucciones -->
-                    <div class="instrucciones" style="margin-bottom:16px;">
-                        <strong>¿Cómo pagar?</strong>
-                        <ol>
-                            <li>Presiona el botón "Ir a Mercado Pago"</li>
-                            <li>En la pasarela ingresa el monto: <strong id="mp-monto-inst">S/ 0.00</strong></li>
-                            <li>Completa los datos de tu tarjeta y confirma el pago</li>
-                            <li>Regresa a esta página y el hotel verificará tu pago</li>
-                        </ol>
-                    </div>
-
-                    <!-- Botón MP -->
-                    <a href="https://link.mercadopago.com.pe/hcostaazul"
-                       target="_blank"
-                       class="btn-mp-fixed"
-                       onclick="registrarClickMP()">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm-1-7h2v2h-2zm0-8h2v6h-2z"/></svg>
-                        Ir a Mercado Pago
-                    </a>
-
-                    <div class="aviso-wp" id="aviso-mp" style="margin-top:12px;">
-                        🔄 Se abrió Mercado Pago en una nueva pestaña. Regresa aquí cuando termines.
-                    </div>
-                </div>
+            <!-- Monto -->
+            <div class="monto-box">
+                <div class="mb-label">Monto total a pagar</div>
+                <div class="mb-valor" id="mp-monto">S/ 0.00</div>
             </div>
 
-            <!-- Panel confirmado -->
-            <div id="panel-confirmado" style="display:none;">
-                <div class="panel-ok">
-                    <div style="font-size:56px;margin-bottom:12px;">✅</div>
-                    <h2>¡Comprobante enviado!</h2>
-                    <p>El hotel recibirá tu comprobante y confirmará tu reserva en breve.<br>Te contactaremos al número o correo registrado.</p>
-                    <div class="panel-ok-btns">
-                        <a href="exitosa.html" class="pbtn pbtn-outline" style="color:#fff;border-color:rgba(255,255,255,.4);">Ver resumen de reserva</a>
-                        <a href="index.html" class="pbtn pbtn-dark" style="background:#fff;color:#14532d;">Volver al inicio</a>
-                    </div>
-                </div>
+            <!-- Nota importante -->
+            <div class="mp-nota">
+                💡 Al ingresar a Mercado Pago, ingresa exactamente el monto de tu reserva: <strong id="mp-monto-nota">S/ 0.00</strong>.<br>
+                Puedes pagar con tarjeta, Yape, Plin, efectivo en agentes y más.
+            </div>
+
+            <!-- Instrucciones -->
+            <div class="instrucciones">
+                <strong>¿Cómo pagar?</strong>
+                <ol>
+                    <li>Presiona el botón <strong>"Ir a Mercado Pago"</strong></li>
+                    <li>Ingresa el monto exacto: <strong id="mp-monto-inst">S/ 0.00</strong></li>
+                    <li>Elige tu método preferido (tarjeta, Yape, Plin, efectivo…)</li>
+                    <li>Completa el pago y guarda tu comprobante</li>
+                </ol>
+            </div>
+
+            <!-- Botón Mercado Pago -->
+            <a href="https://link.mercadopago.com.pe/hcostaazul"
+               target="_blank"
+               class="btn-mp-fixed"
+               onclick="alHacerClick()">
+                <svg width="22" height="22" viewBox="0 0 32 32" fill="currentColor" style="flex-shrink:0">
+                    <path d="M16 2C8.268 2 2 8.268 2 16s6.268 14 14 14 14-6.268 14-14S23.732 2 16 2zm0 2c6.627 0 12 5.373 12 12S22.627 28 16 28 4 22.627 4 16 9.373 4 16 4zm-1 5v6H9l7 8 7-8h-6V9h-2z"/>
+                </svg>
+                Ir a Mercado Pago
+            </a>
+
+            <div class="aviso-click" id="aviso-click">
+                🔄 Se abrió Mercado Pago en una nueva pestaña. Completa el pago allí y guarda tu comprobante.
+            </div>
+
+            <div style="margin-top:20px;text-align:center;">
+                <a href="confirmar.html" style="font-size:13px;color:var(--muted);">← Volver a la confirmación</a>
             </div>
         </div>
 
         <!-- ── COLUMNA DERECHA: resumen ── -->
         <div>
-            <!-- Info reserva -->
-            <div style="background:var(--white);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:16px;">
-                <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;">Tu reserva</div>
-                <div style="display:flex;flex-direction:column;gap:10px;">
-                    <div style="display:flex;justify-content:space-between;font-size:13px;">
-                        <span style="color:var(--muted);">Código</span>
-                        <strong id="r-codigo" style="color:var(--navy);">—</strong>
-                    </div>
-                    <div style="display:flex;justify-content:space-between;font-size:13px;">
-                        <span style="color:var(--muted);">Habitación</span>
-                        <strong id="r-hab">—</strong>
-                    </div>
-                    <div style="display:flex;justify-content:space-between;font-size:13px;">
-                        <span style="color:var(--muted);">Check-in</span>
-                        <strong id="r-checkin">—</strong>
-                    </div>
-                    <div style="display:flex;justify-content:space-between;font-size:13px;">
-                        <span style="color:var(--muted);">Check-out</span>
-                        <strong id="r-checkout">—</strong>
-                    </div>
-                </div>
+            <div class="info-card">
+                <div class="info-card-label">Tu reserva</div>
+                <div class="info-row"><span>Código</span><strong id="r-codigo" style="color:var(--navy);">—</strong></div>
+                <div class="info-row"><span>Habitación</span><strong id="r-hab">—</strong></div>
+                <div class="info-row"><span>Check-in</span><strong id="r-checkin">—</strong></div>
+                <div class="info-row"><span>Check-out</span><strong id="r-checkout">—</strong></div>
             </div>
 
-            <!-- Total -->
             <div class="resumen-pago">
-                <div class="res-row">
-                    <label>Noches</label>
-                    <span id="r-noches">—</span>
-                </div>
-                <div class="res-row">
-                    <label>Precio / noche</label>
-                    <span id="r-precio-noche">—</span>
-                </div>
-                <div class="res-row total">
-                    <label>Total a pagar</label>
-                    <span id="res-total">S/ 0.00</span>
-                </div>
+                <div class="res-row"><label>Noches</label><span id="r-noches">—</span></div>
+                <div class="res-row"><label>Precio / noche</label><span id="r-precio-noche">—</span></div>
+                <div class="res-row total"><label>Total</label><span id="res-total">S/ 0.00</span></div>
             </div>
 
-            <!-- Cliente -->
-            <div style="background:var(--white);border:1px solid var(--border);border-radius:16px;padding:20px;">
-                <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;">Cliente</div>
-                <div style="display:flex;flex-direction:column;gap:8px;font-size:13px;">
-                    <div><span style="color:var(--muted);">Nombre: </span><strong id="r-cliente">—</strong></div>
-                    <div><span style="color:var(--muted);">Correo: </span><strong id="r-correo">—</strong></div>
+            <div class="info-card">
+                <div class="info-card-label">Cliente</div>
+                <div class="info-row"><span>Nombre</span><strong id="r-cliente">—</strong></div>
+                <div class="info-row"><span>Correo</span><strong id="r-correo" style="font-size:12px;">—</strong></div>
+            </div>
+
+            <!-- Métodos aceptados -->
+            <div class="info-card" style="margin-bottom:0;">
+                <div class="info-card-label">Métodos aceptados</div>
+                <div style="display:flex;flex-wrap:wrap;gap:8px;font-size:12px;">
+                    <span style="background:#f1f5f9;border-radius:8px;padding:5px 10px;font-weight:600;">💳 Tarjeta</span>
+                    <span style="background:#f1f5f9;border-radius:8px;padding:5px 10px;font-weight:600;">📱 Yape</span>
+                    <span style="background:#f1f5f9;border-radius:8px;padding:5px 10px;font-weight:600;">📱 Plin</span>
+                    <span style="background:#f1f5f9;border-radius:8px;padding:5px 10px;font-weight:600;">💵 Efectivo</span>
                 </div>
             </div>
         </div>
+
     </div>
 </div>
 
 <script src="js/config.js"></script>
 <script>
-    const WA_NUMBER     = '51946539418';
-    const resultado     = JSON.parse(localStorage.getItem('reserva_resultado') || 'null');
-    const hab           = JSON.parse(localStorage.getItem('reserva_hab')       || 'null');
-    const cliente       = JSON.parse(localStorage.getItem('reserva_cliente')   || '{}');
+    const resultado = JSON.parse(localStorage.getItem('reserva_resultado') || 'null');
+    const hab       = JSON.parse(localStorage.getItem('reserva_hab')       || 'null');
+    const cliente   = JSON.parse(localStorage.getItem('reserva_cliente')   || '{}');
 
     if (!resultado || !hab) { window.location.href = 'index.html'; }
 
-    const codigoReserva = resultado.codigo_reserva;
-    const precioTotal   = parseFloat(resultado.precio_total);
-    const montoFmt      = `S/ ${precioTotal.toFixed(2)}`;
-    const nombreCliente = `${cliente.nombre || ''} ${cliente.apellido || ''}`.trim();
+    const precioTotal = parseFloat(resultado.precio_total);
+    const montoFmt    = `S/ ${precioTotal.toFixed(2)}`;
 
-    // ── Llenar resumen ──
-    document.getElementById('r-codigo').textContent     = codigoReserva;
-    document.getElementById('r-hab').textContent        = `${hab.tipo} — Nro. ${hab.numero}`;
-    document.getElementById('r-checkin').textContent    = hab.checkin;
-    document.getElementById('r-checkout').textContent   = hab.checkout;
-    document.getElementById('r-noches').textContent     = `${hab.noches || 1} noche(s)`;
+    document.getElementById('r-codigo').textContent      = resultado.codigo_reserva;
+    document.getElementById('r-hab').textContent         = `${hab.tipo} — Nro. ${hab.numero}`;
+    document.getElementById('r-checkin').textContent     = hab.checkin;
+    document.getElementById('r-checkout').textContent    = hab.checkout;
+    document.getElementById('r-noches').textContent      = `${hab.noches || 1} noche(s)`;
     document.getElementById('r-precio-noche').textContent = `S/ ${parseFloat(hab.precio_base || 0).toFixed(2)}`;
-    document.getElementById('res-total').textContent    = montoFmt;
-    document.getElementById('r-cliente').textContent    = nombreCliente || '—';
-    document.getElementById('r-correo').textContent     = cliente.correo || '—';
+    document.getElementById('res-total').textContent     = montoFmt;
+    document.getElementById('r-cliente').textContent     = `${cliente.nombre || ''} ${cliente.apellido || ''}`.trim() || '—';
+    document.getElementById('r-correo').textContent      = cliente.correo || '—';
 
-    // ── Llenar montos en paneles ──
-    ['yp-monto', 'yp-monto-inst', 'mp-monto', 'mp-monto-nota', 'mp-monto-inst'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = montoFmt;
+    ['mp-monto', 'mp-monto-nota', 'mp-monto-inst'].forEach(id => {
+        document.getElementById(id).textContent = montoFmt;
     });
 
-    // ── Armar enlace WhatsApp ──
-    function buildWpUrl() {
-        const texto = encodeURIComponent(
-            `Hola, soy ${nombreCliente}. Adjunto el comprobante de pago de ${montoFmt} ` +
-            `por la reserva #${codigoReserva} en el Hotel Costa Azul. ` +
-            `Fechas: ${hab.checkin} → ${hab.checkout}.`
-        );
-        return `https://wa.me/${WA_NUMBER}?text=${texto}`;
-    }
-    document.getElementById('btn-wp').href = buildWpUrl();
-
-    // ── Seleccionar opción ──
-    function selOpcion(op) {
-        document.getElementById('opt-yape').classList.toggle('active',    op === 'yape');
-        document.getElementById('opt-tarjeta').classList.toggle('active', op === 'tarjeta');
-        document.getElementById('panel-yape').classList.toggle('visible',    op === 'yape');
-        document.getElementById('panel-tarjeta').classList.toggle('visible', op === 'tarjeta');
-    }
-
-    // ── Al enviar WhatsApp ──
-    function registrarEnvioWP() {
+    function alHacerClick() {
         setTimeout(() => {
-            document.getElementById('aviso-wp').style.display = 'block';
-            // Mostrar panel confirmado tras 1.5s
-            setTimeout(() => {
-                document.getElementById('panel-pago').style.display      = 'none';
-                document.getElementById('panel-confirmado').style.display = 'block';
-            }, 1500);
-        }, 800);
-    }
-
-    // ── Al hacer clic en Mercado Pago ──
-    function registrarClickMP() {
-        document.getElementById('aviso-mp').style.display = 'block';
+            document.getElementById('aviso-click').style.display = 'block';
+        }, 300);
     }
 </script>
 </body>
