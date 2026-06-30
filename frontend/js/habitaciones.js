@@ -89,14 +89,16 @@ async function buscarHabitaciones(checkin, checkout, tipo, personas) {
                     <div class="room-tags">${tags}</div>
                 </div>
                 <div class="room-footer">
-                    <button class="pbtn pbtn-dark pbtn-full"
+                    <button class="pbtn pbtn-dark pbtn-full" id="btn-sel-${h.id_habitacion}"
                         onclick="seleccionarHabitacion(
                             ${h.id_habitacion},'${h.numero}','${h.tipo}',
                             ${h.precio_base},${h.capacidad},
-                            '${checkin}','${checkout}',${p},${noches},${precioTotal}
+                            '${checkin}','${checkout}',${p},${noches},${precioTotal},
+                            this
                         )">
                         Seleccionar habitación
                     </button>
+                    <div id="err-sel-${h.id_habitacion}" class="palert palert-error" style="display:none;margin-top:8px;font-size:12px;"></div>
                 </div>
             </div>`;
         }).join('');
@@ -107,8 +109,35 @@ async function buscarHabitaciones(checkin, checkout, tipo, personas) {
     }
 }
 
-function seleccionarHabitacion(idHab, numero, tipo, precioBase, capacidad,
-                                checkin, checkout, personas, noches, precioTotal) {
+async function seleccionarHabitacion(idHab, numero, tipo, precioBase, capacidad,
+                                     checkin, checkout, personas, noches, precioTotal, btn) {
+    const errEl = document.getElementById(`err-sel-${idHab}`);
+    errEl.style.display = 'none';
+
+    const textoOriginal = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Verificando disponibilidad…';
+
+    try {
+        const qp = new URLSearchParams({ checkin, checkout, personas });
+        const resp = await fetch(`${API_BASE}/api/habitaciones/disponibles?${qp.toString()}`);
+        const data = await resp.json();
+
+        if (!resp.ok) throw new Error(data.error || 'Error del servidor');
+
+        const sigueDisponible = data.habitaciones.some(h => h.id_habitacion === idHab);
+
+        if (!sigueDisponible) {
+            errEl.textContent = 'Esta habitación ya no está disponible para las fechas seleccionadas. Por favor elige otra.';
+            errEl.style.display = 'block';
+            btn.disabled = false;
+            btn.textContent = textoOriginal;
+            return;
+        }
+    } catch {
+        // Si el servidor no responde, se deja pasar para no bloquear al usuario
+    }
+
     localStorage.setItem('reserva_hab', JSON.stringify({
         id_habitacion: idHab, numero, tipo,
         precio_base: precioBase, capacidad,
