@@ -301,9 +301,9 @@ class ReniecService:
 
     def __init__(self, providers: Optional[List[ReniecProvider]] = None) -> None:
         self._providers: List[ReniecProvider] = providers or [
-            ReniecCloudProvider(),
             ApisNetPeProvider(),
             ApisPeruComProvider(),
+            ReniecCloudProvider(),
         ]
 
     def consultar_dni(self, dni: str) -> DniData:
