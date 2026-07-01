@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservas — Hotel Costa Azul</title>
+    <link rel="stylesheet" href="../css/premium.css">
+    <script>
+        (function() {
+            const rol = sessionStorage.getItem('personal_rol');
+            if (rol !== 'admin' && rol !== 'recepcion')
+                window.location.href = '../login.html?rol=recepcion&redirect=recepcion/reservas.html';
+        })();
+    </script>
+    <style>
+        .res-toolbar {
+            display: flex; gap: 12px; align-items: center;
+            flex-wrap: wrap; margin-bottom: 20px;
+        }
+        .res-search-wrap {
+            flex: 1; min-width: 200px;
+            display: flex; align-items: center; gap: 10px;
+            background: var(--white); border: 1px solid var(--border);
+            border-radius: 10px; padding: 0 14px; height: 42px;
+        }
+        .res-search-wrap input {
+            border: none; outline: none; width: 100%; font-size: 13px; background: transparent;
+        }
+        .filter-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+        .ftab {
+            padding: 7px 14px; border-radius: 20px; border: 1px solid var(--border);
+            background: var(--white); font-size: 12px; font-weight: 700; cursor: pointer;
+            color: var(--muted); transition: all .15s;
+        }
+        .ftab.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+        .ftab:hover:not(.active) { border-color: var(--navy); color: var(--navy); }
+
+        .res-table-wrap {
+            background: var(--white); border: 1px solid var(--border);
+            border-radius: 16px; overflow: hidden;
+        }
+        .res-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .res-table th {
+            text-align: left; padding: 12px 16px;
+            font-size: 11px; letter-spacing: 1px; text-transform: uppercase;
+            color: var(--muted); border-bottom: 2px solid var(--border);
+            background: #f8fafc;
+        }
+        .res-table td { padding: 13px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        .res-table tr:last-child td { border-bottom: none; }
+        .res-table tr:hover td { background: #f8fafc; }
+
+        .estado-badge {
+            display: inline-block; padding: 3px 10px; border-radius: 20px;
+            font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+        }
+        .eb-pendiente    { background: #fef3c7; color: #92400e; }
+        .eb-confirmada   { background: #dcfce7; color: #166534; }
+        .eb-en_hospedaje { background: #dbeafe; color: #1e40af; }
+        .eb-completada   { background: #f1f5f9; color: #475569; }
+        .eb-cancelada    { background: #fee2e2; color: #991b1b; }
+
+        .act-btn {
+            padding: 5px 10px; border-radius: 8px; border: none;
+            font-size: 11px; font-weight: 700; cursor: pointer; transition: opacity .15s;
+        }
+        .act-btn:hover { opacity: .8; }
+        .ab-checkin  { background: #dcfce7; color: #166534; }
+        .ab-checkout { background: #dbeafe; color: #1e40af; }
+        .ab-cancel   { background: #fee2e2; color: #991b1b; }
+        .ab-ver      { background: #f1f5f9; color: #334155; }
+
+        .empty-state { text-align: center; padding: 48px; color: var(--muted); }
+        .empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; }
+
+        /* Modal detalle */
+        .det-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:1000; align-items:center; justify-content:center; }
+        .det-modal.open { display:flex; }
+        .det-box { background:#fff; border-radius:18px; padding:28px; max-width:520px; width:90%; max-height:90vh; overflow-y:auto; }
+        .det-row { display:flex; justify-content:space-between; font-size:13px; padding:6px 0; border-bottom:1px solid var(--border); }
+        .det-row:last-child { border-bottom:none; }
+        .det-row label { color:var(--muted); }
+    </style>
+</head>
+<body>
+<div class="ps-layout">
+
+    <aside class="ps-sidebar">
+        <div class="ps-brand">
+            <h2>Hotel Costa Azul</h2>
+            <span class="ps-brand-sub">Recepción</span>
+        </div>
+        <nav class="ps-nav">
+            <a href="../index.html"><span class="ps-nav-icon">🏠</span>Inicio</a>
+            <a href="index.html"><span class="ps-nav-icon">🔔</span>Notificaciones <span id="badge-side" class="notif-badge" style="display:none;">0</span></a>
+            <a href="reservas.html" class="active"><span class="ps-nav-icon">📋</span>Reservas</a>
+            <a href="nueva-reserva.html"><span class="ps-nav-icon">➕</span>Nueva reserva</a>
+            <a href="cobros.html"><span class="ps-nav-icon">💰</span>Cobros extra</a>
+            <a href="../admin/index.html"><span class="ps-nav-icon">🛏</span>Habitaciones</a>
+        </nav>
+        <div class="ps-user">
+            <div class="ps-avatar" id="sb-avatar">R</div>
+            <div>
+                <div class="ps-user-name" id="sb-user">recepcion</div>
+                <div class="ps-user-role" id="sb-role">Recepcionista</div>
+            </div>
+        </div>
+        <nav class="ps-nav" style="padding-top:0;">
+            <a href="#" class="logout" onclick="cerrarSesion()"><span class="ps-nav-icon">🚪</span>Cerrar sesión</a>
+        </nav>
+    </aside>
+
+    <div class="ps-main">
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+            <div>
+                <h1 style="font-size:22px;font-weight:900;color:var(--navy);margin-bottom:4px;">Reservas</h1>
+                <p style="font-size:13px;color:var(--muted);" id="subtitulo">Cargando...</p>
+            </div>
+            <a href="nueva-reserva.html" class="pbtn pbtn-primary" style="white-space:nowrap;">+ Nueva reserva</a>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="res-toolbar">
+            <div class="res-search-wrap">
+                <span>⌨️</span>
+                <input type="text" id="inp-buscar" placeholder="Buscar por código, nombre o DNI…" oninput="filtrarLocal()">
+            </div>
+        </div>
+
+        <!-- Filtros de estado -->
+        <div class="filter-tabs" style="margin-bottom:20px;">
+            <button class="ftab active" data-estado="" onclick="setFiltro(this,'')">Todas</button>
+            <button class="ftab" data-estado="pendiente" onclick="setFiltro(this,'pendiente')">Pendientes</button>
+            <button class="ftab" data-estado="confirmada" onclick="setFiltro(this,'confirmada')">Confirmadas</button>
+            <button class="ftab" data-estado="en_hospedaje" onclick="setFiltro(this,'en_hospedaje')">En hospedaje</button>
+            <button class="ftab" data-estado="completada" onclick="setFiltro(this,'completada')">Completadas</button>
+            <button class="ftab" data-estado="cancelada" onclick="setFiltro(this,'cancelada')">Canceladas</button>
+        </div>
+
+        <div id="alerta-accion" class="palert" style="display:none;margin-bottom:16px;"></div>
+
+        <!-- Tabla -->
+        <div class="res-table-wrap">
+            <table class="res-table">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Cliente</th>
+                        <th>Habitación</th>
+                        <th>Check-in</th>
+                        <th>Check-out</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody-reservas">
+                    <tr><td colspan="8" class="empty-state"><div class="empty-icon">⏳</div>Cargando...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal detalle -->
+<div class="det-modal" id="det-modal">
+    <div class="det-box">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+            <h3 style="font-size:17px;font-weight:900;color:var(--navy);">Detalle de reserva</h3>
+            <button onclick="cerrarModal()" style="border:none;background:none;font-size:22px;cursor:pointer;color:var(--muted);">✕</button>
+        </div>
+        <div id="det-contenido"></div>
+    </div>
+</div>
+
+<script src="../js/config.js"></script>
+<script>
+    const usuario = sessionStorage.getItem('personal_usuario') || 'recepcion';
+    const rol     = sessionStorage.getItem('personal_rol')     || 'recepcion';
+    document.getElementById('sb-avatar').textContent = usuario.charAt(0).toUpperCase();
+    document.getElementById('sb-user').textContent   = usuario;
+    document.getElementById('sb-role').textContent   = rol === 'admin' ? 'Administrador' : 'Recepcionista';
+
+    let todasReservas  = [];
+    let filtroEstado   = '';
+    let filtroBusqueda = '';
+
+    const ESTADO_LABEL = {
+        pendiente: 'Pendiente', confirmada: 'Confirmada',
+        en_hospedaje: 'En hospedaje', completada: 'Completada', cancelada: 'Cancelada',
+    };
+
+    async function cargarReservas() {
+        try {
+            const url = filtroEstado
+                ? `${API_BASE}/api/recepcion/reservas?estado=${filtroEstado}`
+                : `${API_BASE}/api/recepcion/reservas`;
+            const resp = await fetch(url);
+            const data = await resp.json();
+            todasReservas = data.reservas || [];
+            renderTabla();
+        } catch {
+            document.getElementById('tbody-reservas').innerHTML =
+                '<tr><td colspan="8" class="empty-state">Error al cargar reservas.</td></tr>';
+        }
+    }
+
+    function filtrarLocal() {
+        filtroBusqueda = document.getElementById('inp-buscar').value.trim().toLowerCase();
+        renderTabla();
+    }
+
+    function setFiltro(btn, estado) {
+        document.querySelectorAll('.ftab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        filtroEstado = estado;
+        cargarReservas();
+    }
+
+    function renderTabla() {
+        const lista = filtroBusqueda
+            ? todasReservas.filter(r =>
+                r.codigo_reserva.toLowerCase().includes(filtroBusqueda) ||
+                r.nombre_cliente.toLowerCase().includes(filtroBusqueda) ||
+                r.apellido_cliente.toLowerCase().includes(filtroBusqueda) ||
+                (r.dni_cliente || '').includes(filtroBusqueda))
+            : todasReservas;
+
+        document.getElementById('subtitulo').textContent =
+            `${lista.length} reserva(s) encontrada(s)`;
+
+        if (!lista.length) {
+            document.getElementById('tbody-reservas').innerHTML =
+                '<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">📭</div>Sin reservas para mostrar.</div></td></tr>';
+            return;
+        }
+
+        document.getElementById('tbody-reservas').innerHTML = lista.map(r => {
+            const badge = `<span class="estado-badge eb-${r.estado}">${ESTADO_LABEL[r.estado] || r.estado}</span>`;
+            const acciones = accionesHTML(r);
+            return `<tr>
+                <td style="font-weight:700;color:var(--navy);font-size:12px;">${r.codigo_reserva}</td>
+                <td>${r.nombre_cliente} ${r.apellido_cliente}</td>
+                <td>${r.tipo_habitacion} — ${r.numero_habitacion}</td>
+                <td>${r.fecha_checkin}</td>
+                <td>${r.fecha_checkout}</td>
+                <td style="font-weight:700;">S/ ${parseFloat(r.precio_total).toFixed(2)}</td>
+                <td>${badge}</td>
+                <td><div style="display:flex;gap:5px;flex-wrap:wrap;">${acciones}</div></td>
+            </tr>`;
+        }).join('');
+    }
+
+    function accionesHTML(r) {
+        let btns = `<button class="act-btn ab-ver" onclick='verDetalle(${JSON.stringify(r)})'>Ver</button>`;
+        if (r.estado === 'confirmada')
+            btns += `<button class="act-btn ab-checkin" onclick="accion('${r.codigo_reserva}','checkin')">Check-in</button>`;
+        if (r.estado === 'en_hospedaje')
+            btns += `<button class="act-btn ab-checkout" onclick="accion('${r.codigo_reserva}','checkout')">Check-out</button>`;
+        if (['pendiente','confirmada'].includes(r.estado))
+            btns += `<button class="act-btn ab-cancel" onclick="accion('${r.codigo_reserva}','cancelar')">Cancelar</button>`;
+        return btns;
+    }
+
+    async function accion(codigo, tipo) {
+        const mensajes = {
+            checkin:  `¿Confirmar check-in para la reserva ${codigo}?`,
+            checkout: `¿Confirmar check-out para la reserva ${codigo}?`,
+            cancelar: `¿Cancelar la reserva ${codigo}? Esta acción no se puede deshacer.`,
+        };
+        if (!confirm(mensajes[tipo])) return;
+
+        try {
+            const resp = await fetch(`${API_BASE}/api/recepcion/reservas/${codigo}/${tipo}`, { method: 'PATCH' });
+            const data = await resp.json();
+            mostrarAlerta(resp.ok ? data.mensaje : data.error, resp.ok ? 'success' : 'error');
+            if (resp.ok) cargarReservas();
+        } catch {
+            mostrarAlerta('Error de conexión.', 'error');
+        }
+    }
+
+    function mostrarAlerta(msg, tipo) {
+        const el = document.getElementById('alerta-accion');
+        el.className = `palert palert-${tipo === 'error' ? 'error' : 'success'}`;
+        el.textContent = msg;
+        el.style.display = 'block';
+        setTimeout(() => el.style.display = 'none', 4000);
+    }
+
+    function verDetalle(r) {
+        document.getElementById('det-contenido').innerHTML = `
+            <div class="det-row"><label>Código</label><strong>${r.codigo_reserva}</strong></div>
+            <div class="det-row"><label>Cliente</label><span>${r.nombre_cliente} ${r.apellido_cliente}</span></div>
+            <div class="det-row"><label>DNI</label><span>${r.dni_cliente || '—'}</span></div>
+            <div class="det-row"><label>Correo</label><span>${r.correo_cliente || '—'}</span></div>
+            <div class="det-row"><label>Teléfono</label><span>${r.telefono_cliente || '—'}</span></div>
+            <div class="det-row"><label>Personas</label><span>${r.cantidad_personas}</span></div>
+            <div class="det-row"><label>Habitación</label><span>${r.tipo_habitacion} — Nro. ${r.numero_habitacion}</span></div>
+            <div class="det-row"><label>Check-in</label><span>${r.fecha_checkin}</span></div>
+            <div class="det-row"><label>Check-out</label><span>${r.fecha_checkout}</span></div>
+            <div class="det-row"><label>Total</label><strong>S/ ${parseFloat(r.precio_total).toFixed(2)}</strong></div>
+            <div class="det-row"><label>Estado</label><span class="estado-badge eb-${r.estado}">${ESTADO_LABEL[r.estado]}</span></div>
+            <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;">
+                ${r.estado === 'confirmada' ? `<button class="pbtn pbtn-primary" style="font-size:13px;padding:10px 16px;" onclick="accion('${r.codigo_reserva}','checkin');cerrarModal()">✅ Check-in</button>` : ''}
+                ${r.estado === 'en_hospedaje' ? `<button class="pbtn pbtn-primary" style="font-size:13px;padding:10px 16px;" onclick="accion('${r.codigo_reserva}','checkout');cerrarModal()">🚪 Check-out</button>` : ''}
+                ${['pendiente','confirmada'].includes(r.estado) ? `<button class="pbtn" style="font-size:13px;padding:10px 16px;background:#fee2e2;color:#991b1b;border:none;" onclick="accion('${r.codigo_reserva}','cancelar');cerrarModal()">✕ Cancelar</button>` : ''}
+                <a href="cobros.html" class="pbtn pbtn-outline" style="font-size:13px;padding:10px 16px;" onclick="sessionStorage.setItem('cobro_codigo','${r.codigo_reserva}')">💰 Cobros extra</a>
+            </div>
+        `;
+        document.getElementById('det-modal').classList.add('open');
+    }
+
+    function cerrarModal() {
+        document.getElementById('det-modal').classList.remove('open');
+    }
+
+    function cerrarSesion() {
+        sessionStorage.clear();
+        window.location.href = '../personal.html';
+    }
+
+    cargarReservas();
+</script>
+</body>
+</html>
