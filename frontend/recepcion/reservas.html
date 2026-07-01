@@ -69,6 +69,7 @@
         .ab-checkout { background: #dbeafe; color: #1e40af; }
         .ab-cancel   { background: #fee2e2; color: #991b1b; }
         .ab-ver      { background: #f1f5f9; color: #334155; }
+        .ab-edit     { background: #fef3c7; color: #92400e; }
 
         .empty-state { text-align: center; padding: 48px; color: var(--muted); }
         .empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; }
@@ -174,6 +175,57 @@
     </div>
 </div>
 
+<!-- Modal modificar -->
+<div class="det-modal" id="mod-modal">
+    <div class="det-box" style="max-width:580px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <h3 style="font-size:17px;font-weight:900;color:var(--navy);">Modificar reserva</h3>
+            <button onclick="cerrarModModal()" style="border:none;background:none;font-size:22px;cursor:pointer;color:var(--muted);">✕</button>
+        </div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">Solo disponible con al menos <strong>24 horas</strong> de anticipación al check-in.</p>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div class="pform-group">
+                <label class="pform-label">Check-in</label>
+                <input type="date" id="mod-checkin" class="pform-input">
+            </div>
+            <div class="pform-group">
+                <label class="pform-label">Check-out</label>
+                <input type="date" id="mod-checkout" class="pform-input">
+            </div>
+            <div class="pform-group">
+                <label class="pform-label">Personas</label>
+                <input type="number" id="mod-personas" class="pform-input" min="1" max="10">
+            </div>
+            <div class="pform-group">
+                <label class="pform-label">Teléfono</label>
+                <input type="tel" id="mod-telefono" class="pform-input" maxlength="9" inputmode="numeric">
+            </div>
+            <div class="pform-group" style="grid-column:1/-1;">
+                <label class="pform-label">Nombres</label>
+                <input type="text" id="mod-nombre" class="pform-input">
+            </div>
+            <div class="pform-group" style="grid-column:1/-1;">
+                <label class="pform-label">Apellidos</label>
+                <input type="text" id="mod-apellido" class="pform-input">
+            </div>
+            <div class="pform-group" style="grid-column:1/-1;">
+                <label class="pform-label">Correo</label>
+                <input type="email" id="mod-correo" class="pform-input">
+            </div>
+        </div>
+
+        <div id="err-mod" class="palert palert-error" style="display:none;margin:12px 0;"></div>
+
+        <div style="display:flex;gap:12px;margin-top:16px;">
+            <button class="pbtn pbtn-outline" onclick="cerrarModModal()" style="flex:1;">Cancelar</button>
+            <button class="pbtn pbtn-primary" onclick="guardarModificacion()" style="flex:2;" id="btn-guardar-mod">
+                Guardar cambios
+            </button>
+        </div>
+    </div>
+</div>
+
 <script src="../js/config.js"></script>
 <script>
     const usuario = sessionStorage.getItem('personal_usuario') || 'recepcion';
@@ -254,6 +306,8 @@
 
     function accionesHTML(r) {
         let btns = `<button class="act-btn ab-ver" onclick='verDetalle(${JSON.stringify(r)})'>Ver</button>`;
+        if (['pendiente','confirmada'].includes(r.estado))
+            btns += `<button class="act-btn ab-edit" onclick='abrirModificar(${JSON.stringify(r)})'>Modificar</button>`;
         if (r.estado === 'confirmada')
             btns += `<button class="act-btn ab-checkin" onclick="accion('${r.codigo_reserva}','checkin')">Check-in</button>`;
         if (r.estado === 'en_hospedaje')
@@ -314,6 +368,64 @@
 
     function cerrarModal() {
         document.getElementById('det-modal').classList.remove('open');
+    }
+
+    let codigoModificando = '';
+
+    function abrirModificar(r) {
+        codigoModificando = r.codigo_reserva;
+        document.getElementById('mod-checkin').value   = r.fecha_checkin;
+        document.getElementById('mod-checkout').value  = r.fecha_checkout;
+        document.getElementById('mod-personas').value  = r.cantidad_personas;
+        document.getElementById('mod-nombre').value    = r.nombre_cliente;
+        document.getElementById('mod-apellido').value  = r.apellido_cliente;
+        document.getElementById('mod-correo').value    = r.correo_cliente;
+        document.getElementById('mod-telefono').value  = r.telefono_cliente || '';
+        document.getElementById('err-mod').style.display = 'none';
+        document.getElementById('mod-modal').classList.add('open');
+    }
+
+    function cerrarModModal() {
+        document.getElementById('mod-modal').classList.remove('open');
+    }
+
+    async function guardarModificacion() {
+        const btn    = document.getElementById('btn-guardar-mod');
+        const errEl  = document.getElementById('err-mod');
+        errEl.style.display = 'none';
+
+        const payload = {
+            nueva_checkin:  document.getElementById('mod-checkin').value  || undefined,
+            nueva_checkout: document.getElementById('mod-checkout').value || undefined,
+            personas:       parseInt(document.getElementById('mod-personas').value) || undefined,
+            nombre:         document.getElementById('mod-nombre').value.trim()   || undefined,
+            apellido:       document.getElementById('mod-apellido').value.trim() || undefined,
+            correo:         document.getElementById('mod-correo').value.trim()   || undefined,
+            telefono:       document.getElementById('mod-telefono').value.trim() || undefined,
+        };
+
+        btn.disabled = true; btn.textContent = 'Guardando...';
+        try {
+            const resp = await fetch(`${API_BASE}/api/recepcion/reservas/${codigoModificando}/modificar`, {
+                method:  'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify(payload),
+            });
+            const data = await resp.json();
+            if (!resp.ok) {
+                errEl.textContent = data.error || 'No se pudo modificar.';
+                errEl.style.display = 'block';
+            } else {
+                cerrarModModal();
+                mostrarAlerta(data.mensaje || 'Reserva modificada correctamente', 'success');
+                cargarReservas();
+            }
+        } catch {
+            errEl.textContent = 'Error de conexión.';
+            errEl.style.display = 'block';
+        } finally {
+            btn.disabled = false; btn.textContent = 'Guardar cambios';
+        }
     }
 
     function cerrarSesion() {

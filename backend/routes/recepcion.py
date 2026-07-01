@@ -181,6 +181,136 @@ def hacer_checkout(codigo):
         if conexion: conexion.close()
 
 
+# ── Modificar reserva (solo con 24h de anticipación) ──
+@recepcion_bp.route("/api/recepcion/reservas/<codigo>/modificar", methods=["PATCH"])
+def modificar_reserva(codigo):
+    from datetime import datetime, timedelta, date as date_type
+    data = request.get_json() or {}
+
+    conexion = None
+    cursor   = None
+    try:
+        conexion = get_connection()
+        cursor   = get_cursor(conexion)
+
+        cursor.execute("""
+            SELECT r.id_reserva, r.estado, r.fecha_checkin, r.id_habitacion,
+                   r.nombre_cliente, r.apellido_cliente, r.correo_cliente,
+                   r.telefono_cliente, r.cantidad_personas,
+                   r.fecha_checkout, h.precio_base
+            FROM reservas r
+            JOIN habitaciones h ON r.id_habitacion = h.id_habitacion
+            WHERE r.codigo_reserva = %s
+        """, (codigo,))
+        res = cursor.fetchone()
+
+        if res is None:
+            return jsonify({"error": "Reserva no encontrada"}), 404
+
+        if res["estado"] not in ("pendiente", "confirmada"):
+            return jsonify({"error": f"No se puede modificar una reserva en estado '{res['estado']}'"}), 409
+
+        limite = datetime.now() + timedelta(hours=24)
+        checkin_actual = datetime.combine(res["fecha_checkin"], datetime.min.time())
+        if checkin_actual <= limite:
+            horas_restantes = max(0, int((checkin_actual - datetime.now()).total_seconds() / 3600))
+            return jsonify({
+                "error": f"No se puede modificar con menos de 24 horas de anticipación. El check-in es en {horas_restantes} hora(s)."
+            }), 409
+
+        nueva_checkin  = data.get("nueva_checkin")
+        nueva_checkout = data.get("nueva_checkout")
+        personas       = data.get("personas")
+        nombre         = data.get("nombre", "").strip() or None
+        apellido       = data.get("apellido", "").strip() or None
+        correo         = data.get("correo", "").strip() or None
+        telefono       = data.get("telefono", "").strip() or None
+
+        fecha_checkin  = res["fecha_checkin"]
+        fecha_checkout = res["fecha_checkout"]
+        precio_base    = float(res["precio_base"])
+        recalcular     = False
+
+        if nueva_checkin or nueva_checkout:
+            try:
+                fecha_checkin  = datetime.strptime(nueva_checkin  or str(res["fecha_checkin"]),  "%Y-%m-%d").date()
+                fecha_checkout = datetime.strptime(nueva_checkout or str(res["fecha_checkout"]), "%Y-%m-%d").date()
+            except ValueError:
+                return jsonify({"error": "Formato de fecha inválido. Use YYYY-MM-DD"}), 400
+
+            if fecha_checkout <= fecha_checkin:
+                return jsonify({"error": "El check-out debe ser posterior al check-in"}), 400
+
+            nuevo_ci = datetime.combine(fecha_checkin, datetime.min.time())
+            if nuevo_ci <= limite:
+                return jsonify({"error": "Las nuevas fechas también deben tener al menos 24 horas de anticipación"}), 409
+
+            cursor.execute("""
+                SELECT COUNT(*) AS total FROM reservas
+                WHERE id_habitacion = %s
+                  AND id_reserva   != %s
+                  AND estado IN ('pendiente', 'confirmada', 'en_hospedaje')
+                  AND fecha_checkin  < %s
+                  AND fecha_checkout > %s
+            """, (res["id_habitacion"], res["id_reserva"], fecha_checkout, fecha_checkin))
+
+            if cursor.fetchone()["total"] > 0:
+                return jsonify({"error": "La habitación no está disponible en las nuevas fechas"}), 409
+            recalcular = True
+
+        if personas is not None:
+            try:
+                personas = int(personas)
+                if personas <= 0:
+                    return jsonify({"error": "La cantidad de personas debe ser mayor a cero"}), 400
+            except (ValueError, TypeError):
+                return jsonify({"error": "personas debe ser numérico"}), 400
+        else:
+            personas = res["cantidad_personas"]
+
+        from services.reservas_service import calcular_noches, calcular_precio_total
+        noches       = calcular_noches(fecha_checkin, fecha_checkout)
+        precio_total = calcular_precio_total(precio_base, noches) if recalcular else None
+
+        sets = [
+            "fecha_checkin = %s", "fecha_checkout = %s", "cantidad_personas = %s",
+            "nombre_cliente = %s", "apellido_cliente = %s",
+            "correo_cliente = %s", "telefono_cliente = %s",
+        ]
+        vals = [
+            fecha_checkin, fecha_checkout, personas,
+            nombre    or res["nombre_cliente"],
+            apellido  or res["apellido_cliente"],
+            correo    or res["correo_cliente"],
+            telefono  or res["telefono_cliente"],
+        ]
+        if precio_total is not None:
+            sets.append("precio_total = %s")
+            vals.append(precio_total)
+
+        vals.append(res["id_reserva"])
+        cursor.execute(f"UPDATE reservas SET {', '.join(sets)} WHERE id_reserva = %s", vals)
+        conexion.commit()
+
+        return jsonify({
+            "mensaje":        "Reserva modificada correctamente",
+            "codigo_reserva": codigo,
+            "fecha_checkin":  str(fecha_checkin),
+            "fecha_checkout": str(fecha_checkout),
+            "noches":         noches,
+            "precio_total":   precio_total or float(
+                cursor.execute("SELECT precio_total FROM reservas WHERE id_reserva=%s", (res["id_reserva"],)) or 0
+            ),
+        })
+
+    except Exception as e:
+        if conexion: conexion.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if cursor: cursor.close()
+        if conexion: conexion.close()
+
+
 # ── Cancelar reserva ──
 @recepcion_bp.route("/api/recepcion/reservas/<codigo>/cancelar", methods=["PATCH"])
 def cancelar_reserva(codigo):
