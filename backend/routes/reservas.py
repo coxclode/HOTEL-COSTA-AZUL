@@ -897,6 +897,222 @@ def mp_confirmar_pago(codigo_reserva):
             conexion.close()
 
 
+# ── Reprogramación de reserva (cliente) ──
+@reservas_bp.route("/api/reservas/<codigo_reserva>/reprogramar", methods=["PATCH"])
+def reprogramar_reserva(codigo_reserva):
+    from datetime import date as date_type
+    data           = request.get_json() or {}
+    correo         = (data.get("correo") or "").strip().lower()
+    nueva_checkin  = data.get("nueva_checkin")
+    nueva_checkout = data.get("nueva_checkout")
+
+    if not correo or not nueva_checkin or not nueva_checkout:
+        return jsonify({"error": "correo, nueva_checkin y nueva_checkout son obligatorios"}), 400
+
+    try:
+        fecha_checkin  = datetime.strptime(nueva_checkin,  "%Y-%m-%d").date()
+        fecha_checkout = datetime.strptime(nueva_checkout, "%Y-%m-%d").date()
+    except ValueError:
+        return jsonify({"error": "Formato de fecha inválido. Use YYYY-MM-DD"}), 400
+
+    if fecha_checkout <= fecha_checkin:
+        return jsonify({"error": "La fecha de salida debe ser posterior a la de entrada"}), 400
+
+    if fecha_checkin < date_type.today():
+        return jsonify({"error": "La nueva fecha de entrada no puede ser en el pasado"}), 400
+
+    conexion = None
+    cursor   = None
+    try:
+        conexion = get_connection()
+        cursor   = get_cursor(conexion)
+
+        cursor.execute("""
+            SELECT r.id_reserva, r.correo_cliente, r.estado,
+                   r.id_habitacion, h.precio_base,
+                   h.numero AS numero_habitacion, h.tipo AS tipo_habitacion
+            FROM reservas r
+            JOIN habitaciones h ON r.id_habitacion = h.id_habitacion
+            WHERE r.codigo_reserva = %s
+        """, (codigo_reserva,))
+        reserva = cursor.fetchone()
+
+        if reserva is None:
+            return jsonify({"error": "Reserva no encontrada"}), 404
+        if reserva["correo_cliente"].lower() != correo:
+            return jsonify({"error": "El correo no coincide con esta reserva"}), 403
+        if reserva["estado"] not in ("pendiente", "confirmada"):
+            return jsonify({"error": "Solo se pueden reprogramar reservas pendientes o confirmadas"}), 409
+
+        cursor.execute("""
+            SELECT COUNT(*) AS total FROM reservas
+            WHERE id_habitacion = %s
+              AND id_reserva   != %s
+              AND estado IN ('pendiente', 'confirmada', 'en_hospedaje')
+              AND fecha_checkin  < %s
+              AND fecha_checkout > %s
+        """, (reserva["id_habitacion"], reserva["id_reserva"], fecha_checkout, fecha_checkin))
+
+        if cursor.fetchone()["total"] > 0:
+            return jsonify({"error": "La habitación no está disponible en las nuevas fechas seleccionadas"}), 409
+
+        noches       = calcular_noches(fecha_checkin, fecha_checkout)
+        precio_total = calcular_precio_total(float(reserva["precio_base"]), noches)
+
+        cursor.execute("""
+            UPDATE reservas
+            SET fecha_checkin = %s, fecha_checkout = %s, precio_total = %s
+            WHERE id_reserva = %s
+        """, (fecha_checkin, fecha_checkout, precio_total, reserva["id_reserva"]))
+        conexion.commit()
+
+        return jsonify({
+            "mensaje":        "Reserva reprogramada correctamente",
+            "codigo_reserva": codigo_reserva,
+            "nueva_checkin":  str(fecha_checkin),
+            "nueva_checkout": str(fecha_checkout),
+            "noches":         noches,
+            "nuevo_total":    precio_total,
+            "habitacion":     f"{reserva['tipo_habitacion']} — Nro. {reserva['numero_habitacion']}",
+        })
+
+    except Exception as e:
+        if conexion:
+            conexion.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conexion:
+            conexion.close()
+
+
+# ── Cargos extra por servicios o daños (recepción) ──
+@reservas_bp.route("/api/reservas/<codigo_reserva>/cargos", methods=["POST"])
+def agregar_cargo_extra(codigo_reserva):
+    data        = request.get_json() or {}
+    concepto    = (data.get("concepto") or "").strip()
+    metodo_pago = (data.get("metodo_pago") or "").strip().lower()
+
+    try:
+        monto = float(data.get("monto", 0))
+    except (ValueError, TypeError):
+        return jsonify({"error": "monto debe ser numérico"}), 400
+
+    if not concepto:
+        return jsonify({"error": "concepto es obligatorio"}), 400
+    if monto <= 0:
+        return jsonify({"error": "monto debe ser mayor a cero"}), 400
+    if metodo_pago not in METODOS_VALIDOS:
+        return jsonify({"error": f"Método inválido. Opciones: {', '.join(METODOS_VALIDOS)}"}), 400
+
+    conexion = None
+    cursor   = None
+    try:
+        conexion = get_connection()
+        cursor   = get_cursor(conexion)
+
+        cursor.execute("""
+            SELECT id_reserva, estado, nombre_cliente, apellido_cliente
+            FROM reservas WHERE codigo_reserva = %s
+        """, (codigo_reserva,))
+        reserva = cursor.fetchone()
+
+        if reserva is None:
+            return jsonify({"error": "Reserva no encontrada"}), 404
+        if reserva["estado"] == "cancelada":
+            return jsonify({"error": "No se pueden agregar cargos a una reserva cancelada"}), 409
+
+        cod_op = _codigo_operacion(metodo_pago)
+        extra  = Json({"concepto": concepto, "tipo": "cargo_extra"})
+
+        cursor.execute("""
+            INSERT INTO pagos
+                (id_reserva, codigo_operacion, metodo_pago, monto, estado, proveedor_respuesta)
+            VALUES (%s, %s, %s, %s, 'exitoso', %s)
+            RETURNING id_pago, fecha_pago
+        """, (reserva["id_reserva"], cod_op, metodo_pago, monto, extra))
+        row = cursor.fetchone()
+        conexion.commit()
+
+        return jsonify({
+            "cargo": {
+                "id_pago":          row["id_pago"],
+                "codigo_operacion": cod_op,
+                "concepto":         concepto,
+                "metodo_pago":      metodo_pago,
+                "monto":            monto,
+                "fecha":            row["fecha_pago"].isoformat(),
+            }
+        }), 201
+
+    except Exception as e:
+        if conexion:
+            conexion.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conexion:
+            conexion.close()
+
+
+@reservas_bp.route("/api/reservas/<codigo_reserva>/cargos", methods=["GET"])
+def listar_cargos_extra(codigo_reserva):
+    conexion = None
+    cursor   = None
+    try:
+        conexion = get_connection()
+        cursor   = get_cursor(conexion)
+
+        cursor.execute("""
+            SELECT r.id_reserva, r.nombre_cliente, r.apellido_cliente,
+                   r.estado, r.precio_total,
+                   h.numero AS numero_habitacion, h.tipo AS tipo_habitacion
+            FROM reservas r
+            JOIN habitaciones h ON r.id_habitacion = h.id_habitacion
+            WHERE r.codigo_reserva = %s
+        """, (codigo_reserva,))
+        reserva = cursor.fetchone()
+        if reserva is None:
+            return jsonify({"error": "Reserva no encontrada"}), 404
+
+        cursor.execute("""
+            SELECT id_pago, metodo_pago, monto, estado, fecha_pago,
+                   codigo_operacion, proveedor_respuesta
+            FROM pagos
+            WHERE id_reserva = %s
+              AND proveedor_respuesta->>'tipo' = 'cargo_extra'
+            ORDER BY fecha_pago ASC
+        """, (reserva["id_reserva"],))
+
+        cargos = []
+        for row in cursor.fetchall():
+            c = dict(row)
+            c["monto"]     = float(c["monto"])
+            c["fecha_pago"] = c["fecha_pago"].isoformat()
+            c["concepto"]  = (c.get("proveedor_respuesta") or {}).get("concepto", "")
+            del c["proveedor_respuesta"]
+            cargos.append(c)
+
+        reserva_data = dict(reserva)
+        reserva_data["precio_total"] = float(reserva_data["precio_total"])
+
+        return jsonify({
+            "reserva": reserva_data,
+            "cargos":  cargos,
+            "total_cargos": sum(c["monto"] for c in cargos),
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conexion:
+            conexion.close()
+
+
 # ── Helpers ──
 def _serializar_pagos(rows) -> list:
     pagos = []

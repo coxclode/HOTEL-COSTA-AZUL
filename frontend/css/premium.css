@@ -75,13 +75,13 @@ button, input, select, textarea { font-family: inherit; }
 /* ── Hero ── */
 .phero {
   min-height: 88vh; display: flex; align-items: center; justify-content: center;
-  background: linear-gradient(160deg, #0d2b4e 0%, #163d7c 30%, #1e6a9a 60%, #0d2b4e 100%);
+  background: url('../img/fondo HOTEL COSTA AZUL.png') center center / cover no-repeat;
   position: relative; padding: 60px 24px; text-align: center;
   overflow: hidden;
 }
 .phero::after {
   content: ''; position: absolute; inset: 0;
-  background: radial-gradient(ellipse at 60% 40%, rgba(100,180,240,.15) 0%, transparent 60%);
+  background: linear-gradient(160deg, rgba(13,43,78,.72) 0%, rgba(22,61,124,.55) 50%, rgba(13,43,78,.65) 100%);
   pointer-events: none;
 }
 .phero-content { position: relative; z-index: 1; max-width: 700px; margin: 0 auto; }

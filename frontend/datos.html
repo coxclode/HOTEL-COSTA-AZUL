@@ -78,7 +78,7 @@
                         <input type="text" id="dni" class="pform-input" placeholder="12345678"
                                maxlength="8" inputmode="numeric" pattern="\d{8}" required autocomplete="off">
                         <button type="button" class="pbtn-reniec" onclick="consultarDniManual()">
-                            🔍 RENIEC
+                            ⌨️ CONSULTAR
                         </button>
                     </div>
                 </div>
@@ -157,17 +157,13 @@
     })();
 
     // ── DNI: solo números ──
-    let _debounce = null;
     document.getElementById('dni').addEventListener('keypress', e => { if (!/\d/.test(e.key)) e.preventDefault(); });
     document.getElementById('telefono').addEventListener('keypress', e => { if (!/\d/.test(e.key)) e.preventDefault(); });
     document.getElementById('dni').addEventListener('input', function() { this.value = this.value.replace(/\D/g,'').slice(0,8); });
     document.getElementById('telefono').addEventListener('input', function() { this.value = this.value.replace(/\D/g,'').slice(0,9); });
 
     document.getElementById('dni').addEventListener('input', function() {
-        clearTimeout(_debounce);
-        const dni = this.value.trim();
         setDniEstado('','');
-        if (dni.length === 8) _debounce = setTimeout(() => consultarDni(dni), 400);
     });
 
     function consultarDniManual() {

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cobros extra — Hotel Costa Azul</title>
+    <link rel="stylesheet" href="../css/premium.css">
+    <script>
+        (function() {
+            const rol = sessionStorage.getItem('personal_rol');
+            if (rol !== 'admin' && rol !== 'recepcion')
+                window.location.href = '../login.html?rol=recepcion&redirect=recepcion/cobros.html';
+        })();
+    </script>
+    <style>
+        .cobros-layout {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 24px;
+            align-items: start;
+        }
+        @media(max-width:960px) { .cobros-layout { grid-template-columns: 1fr; } }
+
+        .cobros-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        .cobros-card-title {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 16px;
+        }
+
+        .res-info-box {
+            background: linear-gradient(145deg, var(--navy), #163d7c);
+            border-radius: 14px;
+            padding: 20px;
+            color: #fff;
+            margin-bottom: 20px;
+        }
+        .res-info-row { display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0; }
+        .res-info-row label { color: rgba(255,255,255,.6); }
+        .res-info-row.total { font-size: 17px; font-weight: 900; border-top: 1px solid rgba(255,255,255,.2); margin-top: 8px; padding-top: 10px; }
+
+        .cobros-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .cobros-table th { text-align: left; padding: 10px 12px; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); border-bottom: 2px solid var(--border); }
+        .cobros-table td { padding: 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        .cobros-table tr:last-child td { border-bottom: none; }
+        .cobros-empty { text-align: center; color: var(--muted); padding: 28px; font-size: 13px; }
+
+        .metodo-chip {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+        .chip-efectivo    { background: #dcfce7; color: #166534; }
+        .chip-yape        { background: #ede9fe; color: #5b21b6; }
+        .chip-plin        { background: #dbeafe; color: #1e40af; }
+        .chip-transferencia { background: #fef3c7; color: #92400e; }
+        .chip-tarjeta_credito, .chip-tarjeta_debito { background: #f1f5f9; color: #334155; }
+        .chip-mercadopago { background: #e0f2fe; color: #0369a1; }
+
+        .total-cobros-box {
+            background: #fef9c3;
+            border: 1px solid #fde047;
+            border-radius: 12px;
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+            color: #713f12;
+            margin-top: 12px;
+        }
+    </style>
+</head>
+<body>
+<div class="ps-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="ps-sidebar">
+        <div class="ps-brand">
+            <h2>Hotel Costa Azul</h2>
+            <span class="ps-brand-sub">Recepción</span>
+        </div>
+        <nav class="ps-nav">
+            <a href="../index.html"><span class="ps-nav-icon">🏠</span>Inicio</a>
+            <a href="index.html"><span class="ps-nav-icon">🔔</span>Recepción</a>
+            <a href="cobros.html" class="active"><span class="ps-nav-icon">💰</span>Cobros extra</a>
+            <a href="../admin/index.html"><span class="ps-nav-icon">🛏</span>Habitaciones</a>
+        </nav>
+        <div class="ps-user">
+            <div class="ps-avatar" id="sb-avatar">R</div>
+            <div>
+                <div class="ps-user-name" id="sb-user">recepcion</div>
+                <div class="ps-user-role" id="sb-role">Recepcionista</div>
+            </div>
+        </div>
+        <nav class="ps-nav" style="padding-top:0;">
+            <a href="#" class="logout" onclick="cerrarSesion()"><span class="ps-nav-icon">🚪</span>Cerrar sesión</a>
+        </nav>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="ps-main">
+
+        <div style="margin-bottom:24px;">
+            <h1 style="font-size:22px;font-weight:900;color:var(--navy);margin-bottom:4px;">Cobros extra</h1>
+            <p style="font-size:13px;color:var(--muted);">Registra pagos adicionales por servicios o daños durante la estadía.</p>
+        </div>
+
+        <!-- Buscar reserva -->
+        <div class="cobros-card">
+            <div class="cobros-card-title">Buscar reserva</div>
+            <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+                <div class="pform-group" style="flex:1;min-width:200px;margin-bottom:0;">
+                    <label class="pform-label">Código de reserva</label>
+                    <input type="text" id="inp-codigo" class="pform-input"
+                           placeholder="Ej: RSV-A1B2C3"
+                           style="text-transform:uppercase;"
+                           onkeydown="if(event.key==='Enter') buscarReserva()">
+                </div>
+                <button class="pbtn pbtn-primary" onclick="buscarReserva()" style="height:46px;white-space:nowrap;">
+                    ⌨️ Buscar
+                </button>
+            </div>
+            <div id="err-busqueda" class="palert palert-error" style="display:none;margin-top:12px;"></div>
+        </div>
+
+        <!-- Contenido: info + cargos + formulario -->
+        <div id="contenido" style="display:none;">
+            <div class="cobros-layout">
+
+                <!-- Columna izquierda: cargos registrados -->
+                <div>
+                    <div class="cobros-card">
+                        <div class="cobros-card-title">Reserva</div>
+                        <div class="res-info-box" id="res-info-box"></div>
+                    </div>
+
+                    <div class="cobros-card">
+                        <div class="cobros-card-title">Cargos registrados</div>
+                        <div id="cargos-lista">
+                            <div class="cobros-empty">Sin cargos extra aún.</div>
+                        </div>
+                        <div class="total-cobros-box" id="total-cobros" style="display:none;">
+                            <span>Total cobros extra</span>
+                            <span id="total-cobros-val">S/ 0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Columna derecha: agregar cargo -->
+                <div>
+                    <div class="cobros-card">
+                        <div class="cobros-card-title">Agregar cargo</div>
+
+                        <div class="pform-group" style="margin-bottom:14px;">
+                            <label class="pform-label">Concepto *</label>
+                            <input type="text" id="inp-concepto" class="pform-input"
+                                   placeholder="Ej: Servicio de lavandería, Daño al televisor…">
+                        </div>
+
+                        <div class="pform-group" style="margin-bottom:14px;">
+                            <label class="pform-label">Monto (S/) *</label>
+                            <input type="number" id="inp-monto" class="pform-input"
+                                   placeholder="0.00" min="0.01" step="0.01">
+                        </div>
+
+                        <div class="pform-group" style="margin-bottom:20px;">
+                            <label class="pform-label">Método de pago *</label>
+                            <select id="inp-metodo" class="pform-input">
+                                <option value="">Selecciona…</option>
+                                <option value="efectivo">💵 Efectivo</option>
+                                <option value="yape">📱 Yape</option>
+                                <option value="plin">📱 Plin</option>
+                                <option value="transferencia">🏦 Transferencia</option>
+                                <option value="tarjeta_credito">💳 Tarjeta crédito</option>
+                                <option value="tarjeta_debito">💳 Tarjeta débito</option>
+                                <option value="mercadopago">🔵 Mercado Pago</option>
+                            </select>
+                        </div>
+
+                        <div id="err-cargo" class="palert palert-error" style="display:none;margin-bottom:14px;"></div>
+
+                        <button class="pbtn pbtn-primary" style="width:100%;" onclick="agregarCargo()">
+                            + Registrar cargo
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="../js/config.js"></script>
+<script>
+    // Auth
+    const usuario = sessionStorage.getItem('personal_usuario') || 'recepcion';
+    const rol     = sessionStorage.getItem('personal_rol')     || 'recepcion';
+    document.getElementById('sb-avatar').textContent = usuario.charAt(0).toUpperCase();
+    document.getElementById('sb-user').textContent   = usuario;
+    document.getElementById('sb-role').textContent   = rol === 'admin' ? 'Administrador' : 'Recepcionista';
+
+    let codigoActual = '';
+
+    const METODO_LABEL = {
+        efectivo: '💵 Efectivo', yape: '📱 Yape', plin: '📱 Plin',
+        transferencia: '🏦 Transferencia', tarjeta_credito: '💳 Tarjeta Crédito',
+        tarjeta_debito: '💳 Tarjeta Débito', mercadopago: '🔵 Mercado Pago',
+    };
+
+    async function buscarReserva() {
+        const codigo = document.getElementById('inp-codigo').value.trim().toUpperCase();
+        const errEl  = document.getElementById('err-busqueda');
+        errEl.style.display = 'none';
+
+        if (!codigo) {
+            errEl.textContent = 'Ingresa un código de reserva.';
+            errEl.style.display = 'block'; return;
+        }
+
+        try {
+            const resp = await fetch(`${API_BASE}/api/reservas/${codigo}/cargos`);
+            const data = await resp.json();
+            if (!resp.ok) {
+                errEl.textContent = data.error || 'Reserva no encontrada.';
+                errEl.style.display = 'block';
+                document.getElementById('contenido').style.display = 'none';
+                return;
+            }
+            codigoActual = codigo;
+            renderReserva(data.reserva);
+            renderCargos(data.cargos, data.total_cargos);
+            document.getElementById('contenido').style.display = '';
+        } catch {
+            errEl.textContent = 'Error de conexión.';
+            errEl.style.display = 'block';
+        }
+    }
+
+    function renderReserva(r) {
+        document.getElementById('res-info-box').innerHTML = `
+            <div class="res-info-row"><label>Código</label><span>${codigoActual}</span></div>
+            <div class="res-info-row"><label>Huésped</label><span>${r.nombre_cliente} ${r.apellido_cliente}</span></div>
+            <div class="res-info-row"><label>Habitación</label><span>${r.tipo_habitacion} — Nro. ${r.numero_habitacion}</span></div>
+            <div class="res-info-row"><label>Estado</label><span>${r.estado}</span></div>
+            <div class="res-info-row total"><label>Total reserva</label><span>S/ ${parseFloat(r.precio_total).toFixed(2)}</span></div>
+        `;
+    }
+
+    function renderCargos(cargos, total) {
+        const lista = document.getElementById('cargos-lista');
+        const totalBox = document.getElementById('total-cobros');
+
+        if (!cargos.length) {
+            lista.innerHTML = '<div class="cobros-empty">Sin cargos extra aún.</div>';
+            totalBox.style.display = 'none';
+            return;
+        }
+
+        const filas = cargos.map(c => {
+            const chipClass = `metodo-chip chip-${c.metodo_pago}`;
+            const fecha = new Date(c.fecha_pago).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' });
+            return `
+                <tr>
+                    <td>${c.concepto}</td>
+                    <td><span class="${chipClass}">${METODO_LABEL[c.metodo_pago] || c.metodo_pago}</span></td>
+                    <td style="text-align:right;font-weight:700;">S/ ${parseFloat(c.monto).toFixed(2)}</td>
+                    <td style="color:var(--muted);font-size:12px;">${fecha}</td>
+                </tr>`;
+        }).join('');
+
+        lista.innerHTML = `
+            <table class="cobros-table">
+                <thead>
+                    <tr>
+                        <th>Concepto</th>
+                        <th>Método</th>
+                        <th style="text-align:right;">Monto</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>${filas}</tbody>
+            </table>`;
+
+        document.getElementById('total-cobros-val').textContent = `S/ ${parseFloat(total).toFixed(2)}`;
+        totalBox.style.display = 'flex';
+    }
+
+    async function agregarCargo() {
+        const concepto = document.getElementById('inp-concepto').value.trim();
+        const monto    = parseFloat(document.getElementById('inp-monto').value);
+        const metodo   = document.getElementById('inp-metodo').value;
+        const errEl    = document.getElementById('err-cargo');
+        errEl.style.display = 'none';
+
+        if (!concepto) {
+            errEl.textContent = 'El concepto es obligatorio.';
+            errEl.style.display = 'block'; return;
+        }
+        if (!monto || monto <= 0) {
+            errEl.textContent = 'Ingresa un monto válido mayor a cero.';
+            errEl.style.display = 'block'; return;
+        }
+        if (!metodo) {
+            errEl.textContent = 'Selecciona el método de pago.';
+            errEl.style.display = 'block'; return;
+        }
+
+        const btn = event.target;
+        btn.disabled = true;
+        btn.textContent = 'Registrando…';
+
+        try {
+            const resp = await fetch(`${API_BASE}/api/reservas/${codigoActual}/cargos`, {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ concepto, monto, metodo_pago: metodo }),
+            });
+            const data = await resp.json();
+            if (!resp.ok) {
+                errEl.textContent = data.error || 'No se pudo registrar el cargo.';
+                errEl.style.display = 'block';
+            } else {
+                document.getElementById('inp-concepto').value = '';
+                document.getElementById('inp-monto').value    = '';
+                document.getElementById('inp-metodo').value   = '';
+                await buscarReserva();
+            }
+        } catch {
+            errEl.textContent = 'Error de conexión.';
+            errEl.style.display = 'block';
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '+ Registrar cargo';
+        }
+    }
+
+    function cerrarSesion() {
+        sessionStorage.clear();
+        window.location.href = '../personal.html';
+    }
+</script>
+</body>
+</html>

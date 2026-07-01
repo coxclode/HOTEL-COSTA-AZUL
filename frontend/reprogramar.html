@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reprogramar reserva — Hotel Costa Azul</title>
+    <link rel="stylesheet" href="css/premium.css">
+    <style>
+        .repr-card {
+            max-width: 560px;
+            margin: 0 auto;
+        }
+        .repr-box {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 32px;
+            box-shadow: var(--shadow);
+        }
+        .repr-title {
+            font-size: 20px;
+            font-weight: 900;
+            color: var(--navy);
+            margin-bottom: 6px;
+        }
+        .repr-sub {
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 24px;
+        }
+        .repr-reserva-info {
+            background: linear-gradient(145deg, var(--navy), #163d7c);
+            border-radius: 14px;
+            padding: 20px;
+            color: #fff;
+            margin-bottom: 24px;
+        }
+        .repr-res-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            padding: 4px 0;
+        }
+        .repr-res-row label { color: rgba(255,255,255,.6); }
+        .repr-res-row.total {
+            font-size: 18px;
+            font-weight: 900;
+            border-top: 1px solid rgba(255,255,255,.2);
+            margin-top: 10px;
+            padding-top: 10px;
+        }
+        .repr-dates-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        .repr-alerta {
+            background: #fef3c7;
+            border: 1px solid #fcd34d;
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-size: 13px;
+            color: #92400e;
+            margin-bottom: 20px;
+        }
+        .repr-exito {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            color: #14532d;
+        }
+        .repr-exito .repr-check { font-size: 48px; margin-bottom: 8px; }
+        .repr-exito h3 { font-size: 18px; font-weight: 900; margin-bottom: 6px; }
+        .repr-exito p { font-size: 13px; }
+        .step-indicator {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            align-items: center;
+        }
+        .step-dot {
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            color: #94a3b8;
+            font-size: 12px;
+            font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .step-dot.active { background: var(--navy); color: #fff; }
+        .step-dot.done   { background: var(--success); color: #fff; }
+        .step-line { flex: 1; height: 2px; background: #e2e8f0; }
+        .step-line.done { background: var(--success); }
+    </style>
+</head>
+<body>
+
+<header class="pnav">
+    <a class="pnav-brand" href="index.html">Hotel Costa Azul</a>
+    <nav class="pnav-links">
+        <a href="index.html">Inicio</a>
+        <a href="catalogo.html">Habitaciones</a>
+    </nav>
+</header>
+
+<div class="pcontainer" style="max-width:640px; padding-top:40px; padding-bottom:60px;">
+
+    <div class="repr-card">
+        <h1 style="font-size:26px;font-weight:900;color:var(--navy);margin-bottom:4px;">Reprogramar reserva</h1>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:28px;">Cambia las fechas de tu estadía verificando primero tu reserva.</p>
+
+        <!-- Step indicator -->
+        <div class="step-indicator">
+            <div class="step-dot active" id="dot-1">1</div>
+            <div class="step-line" id="line-1"></div>
+            <div class="step-dot" id="dot-2">2</div>
+            <div class="step-line" id="line-2"></div>
+            <div class="step-dot" id="dot-3">3</div>
+        </div>
+
+        <!-- PASO 1: Verificar reserva -->
+        <div id="paso-1" class="repr-box">
+            <div class="repr-title">Verifica tu reserva</div>
+            <div class="repr-sub">Ingresa tu código de reserva y el correo con el que te registraste.</div>
+
+            <div class="pform-group" style="margin-bottom:16px;">
+                <label class="pform-label">Código de reserva *</label>
+                <input type="text" id="inp-codigo" class="pform-input"
+                       placeholder="Ej: RSV-A1B2C3" autocomplete="off"
+                       style="text-transform:uppercase;">
+            </div>
+            <div class="pform-group" style="margin-bottom:20px;">
+                <label class="pform-label">Correo electrónico *</label>
+                <input type="email" id="inp-correo" class="pform-input"
+                       placeholder="tu@correo.com">
+            </div>
+
+            <div id="err-1" class="palert palert-error" style="display:none;margin-bottom:16px;"></div>
+
+            <button class="pbtn pbtn-primary" style="width:100%;" onclick="verificarReserva()">
+                Verificar reserva →
+            </button>
+
+            <div style="text-align:center;margin-top:16px;">
+                <a href="index.html" style="font-size:13px;color:var(--muted);">← Volver al inicio</a>
+            </div>
+        </div>
+
+        <!-- PASO 2: Nuevas fechas -->
+        <div id="paso-2" style="display:none;">
+            <div class="repr-box" style="margin-bottom:16px;">
+                <div class="repr-title">Tu reserva actual</div>
+                <div class="repr-sub" id="p2-sub">Selecciona las nuevas fechas para tu estadía.</div>
+                <div class="repr-reserva-info" id="reserva-info"></div>
+            </div>
+
+            <div class="repr-box">
+                <div class="repr-title">Nuevas fechas</div>
+                <div class="repr-alerta">
+                    ⚠️ Al reprogramar, el precio total se recalculará según las nuevas noches.
+                </div>
+                <div class="repr-dates-grid">
+                    <div class="pform-group">
+                        <label class="pform-label">Nuevo check-in *</label>
+                        <input type="date" id="inp-checkin" class="pform-input">
+                    </div>
+                    <div class="pform-group">
+                        <label class="pform-label">Nuevo check-out *</label>
+                        <input type="date" id="inp-checkout" class="pform-input">
+                    </div>
+                </div>
+
+                <div id="err-2" class="palert palert-error" style="display:none;margin-bottom:16px;"></div>
+
+                <div style="display:flex;gap:12px;">
+                    <button class="pbtn pbtn-outline" onclick="irPaso(1)" style="flex:1;">← Volver</button>
+                    <button class="pbtn pbtn-primary" onclick="confirmarReprogramacion()" style="flex:2;">
+                        Confirmar reprogramación
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PASO 3: Éxito -->
+        <div id="paso-3" style="display:none;">
+            <div class="repr-box">
+                <div class="repr-exito">
+                    <div class="repr-check">✅</div>
+                    <h3>¡Reserva reprogramada!</h3>
+                    <p id="exito-msg">Tu estadía ha sido actualizada correctamente.</p>
+                </div>
+                <div class="repr-reserva-info" id="nueva-info" style="margin-top:20px;"></div>
+                <a href="index.html" class="pbtn pbtn-primary" style="display:block;text-align:center;margin-top:20px;">
+                    Volver al inicio
+                </a>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="js/config.js"></script>
+<script>
+    let reservaActual = null;
+    let codigoActual  = '';
+    let correoActual  = '';
+
+    const hoy = new Date().toISOString().split('T')[0];
+    document.getElementById('inp-checkin').min  = hoy;
+    document.getElementById('inp-checkout').min = hoy;
+    document.getElementById('inp-checkin').addEventListener('change', function() {
+        const dia = new Date(this.value);
+        dia.setDate(dia.getDate() + 1);
+        document.getElementById('inp-checkout').min = dia.toISOString().split('T')[0];
+    });
+
+    function irPaso(n) {
+        [1, 2, 3].forEach(i => {
+            const el = document.getElementById(`paso-${i}`);
+            if (el) el.style.display = i === n ? '' : 'none';
+            const dot = document.getElementById(`dot-${i}`);
+            if (dot) {
+                dot.className = 'step-dot' + (i < n ? ' done' : i === n ? ' active' : '');
+                if (i < n) dot.textContent = '✓';
+                else dot.textContent = i;
+            }
+            if (i < 3) {
+                const line = document.getElementById(`line-${i}`);
+                if (line) line.className = 'step-line' + (i < n ? ' done' : '');
+            }
+        });
+    }
+
+    async function verificarReserva() {
+        const codigo = document.getElementById('inp-codigo').value.trim().toUpperCase();
+        const correo = document.getElementById('inp-correo').value.trim().toLowerCase();
+        const errEl  = document.getElementById('err-1');
+        errEl.style.display = 'none';
+
+        if (!codigo || !correo) {
+            errEl.textContent = 'Completa todos los campos.';
+            errEl.style.display = 'block'; return;
+        }
+
+        try {
+            const resp = await fetch(`${API_BASE}/api/reservas/${codigo}/detalle`);
+            const data = await resp.json();
+            if (!resp.ok) {
+                errEl.textContent = data.error || 'Reserva no encontrada.';
+                errEl.style.display = 'block'; return;
+            }
+            if (data.correo_cliente.toLowerCase() !== correo) {
+                errEl.textContent = 'El correo no coincide con esta reserva.';
+                errEl.style.display = 'block'; return;
+            }
+            if (!['pendiente', 'confirmada'].includes(data.estado)) {
+                errEl.textContent = `No se puede reprogramar una reserva en estado "${data.estado}".`;
+                errEl.style.display = 'block'; return;
+            }
+            reservaActual = data;
+            codigoActual  = codigo;
+            correoActual  = correo;
+            mostrarInfoReserva();
+            irPaso(2);
+        } catch {
+            errEl.textContent = 'Error de conexión. Intenta nuevamente.';
+            errEl.style.display = 'block';
+        }
+    }
+
+    function mostrarInfoReserva() {
+        const r   = reservaActual;
+        const box = document.getElementById('reserva-info');
+        box.innerHTML = `
+            <div class="repr-res-row"><label>Código</label><span>${r.codigo_reserva}</span></div>
+            <div class="repr-res-row"><label>Habitación</label><span>${r.tipo_habitacion} — Nro. ${r.numero_habitacion}</span></div>
+            <div class="repr-res-row"><label>Check-in</label><span>${r.fecha_checkin}</span></div>
+            <div class="repr-res-row"><label>Check-out</label><span>${r.fecha_checkout}</span></div>
+            <div class="repr-res-row total"><label>Total</label><span>S/ ${parseFloat(r.precio_total).toFixed(2)}</span></div>
+        `;
+        document.getElementById('inp-checkin').value  = '';
+        document.getElementById('inp-checkout').value = '';
+    }
+
+    async function confirmarReprogramacion() {
+        const checkin  = document.getElementById('inp-checkin').value;
+        const checkout = document.getElementById('inp-checkout').value;
+        const errEl    = document.getElementById('err-2');
+        errEl.style.display = 'none';
+
+        if (!checkin || !checkout) {
+            errEl.textContent = 'Selecciona las nuevas fechas.';
+            errEl.style.display = 'block'; return;
+        }
+        if (checkout <= checkin) {
+            errEl.textContent = 'El check-out debe ser posterior al check-in.';
+            errEl.style.display = 'block'; return;
+        }
+
+        const btn = event.target;
+        btn.disabled = true;
+        btn.textContent = 'Procesando…';
+
+        try {
+            const resp = await fetch(`${API_BASE}/api/reservas/${codigoActual}/reprogramar`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    correo:         correoActual,
+                    nueva_checkin:  checkin,
+                    nueva_checkout: checkout,
+                }),
+            });
+            const data = await resp.json();
+            if (!resp.ok) {
+                errEl.textContent = data.error || 'No se pudo reprogramar.';
+                errEl.style.display = 'block';
+                btn.disabled = false;
+                btn.textContent = 'Confirmar reprogramación';
+                return;
+            }
+
+            document.getElementById('exito-msg').textContent =
+                `Tu reserva fue actualizada: ${data.nueva_checkin} → ${data.nueva_checkout} (${data.noches} noche(s)). Nuevo total: S/ ${parseFloat(data.nuevo_total).toFixed(2)}`;
+
+            document.getElementById('nueva-info').innerHTML = `
+                <div class="repr-res-row"><label>Código</label><span>${data.codigo_reserva}</span></div>
+                <div class="repr-res-row"><label>Habitación</label><span>${data.habitacion}</span></div>
+                <div class="repr-res-row"><label>Nuevo check-in</label><span>${data.nueva_checkin}</span></div>
+                <div class="repr-res-row"><label>Nuevo check-out</label><span>${data.nueva_checkout}</span></div>
+                <div class="repr-res-row"><label>Noches</label><span>${data.noches}</span></div>
+                <div class="repr-res-row total"><label>Nuevo total</label><span>S/ ${parseFloat(data.nuevo_total).toFixed(2)}</span></div>
+            `;
+            irPaso(3);
+        } catch {
+            errEl.textContent = 'Error de conexión. Intenta nuevamente.';
+            errEl.style.display = 'block';
+            btn.disabled = false;
+            btn.textContent = 'Confirmar reprogramación';
+        }
+    }
+</script>
+</body>
+</html>
